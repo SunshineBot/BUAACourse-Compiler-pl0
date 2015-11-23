@@ -10,11 +10,12 @@ extern int startParser();
 int main() {
     //start();
     initLexer();
-    while (getSym() != -1);
+    getSym();
+    /*while (getSym() != -1);
     cout << endl;
     cout << setw(4) << "num"
         << setw(12) << "type" << ' '
-        << setw(6) << "amount" << endl;
+        << setw(6) << "amount" << endl;*/
 
     startParser();
     //return 0;

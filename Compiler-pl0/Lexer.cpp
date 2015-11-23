@@ -33,6 +33,7 @@ char getch();
 extern void initLexer() {
     init(fpin);
     ch = getch();
+    ch = getch();
 }
 
 //extern int start() {
@@ -222,6 +223,7 @@ extern int getSym() {
                 break;
             case '\0':
                 ch = getch();
+                return getSym();
                 break;
             case -1:
                 return -1;
@@ -236,18 +238,21 @@ extern int getSym() {
 }
 
 char getch() {
-    static char line[257] = "";
+    static char line[MaxStr + 1] = "";
     static int index = -1;
     ++index;
-    while (line[index] == '\0') {
+    if (line[index] == '\0') {
         lineNumber++; 
         if (fpin.eof()) {
             error(-1, lineNumber);      //意外遇到文件尾。
             return -1;
         }
-        fpin.getline(line, 256);
+        fpin.getline(line, MaxStr);
+        while (line[0] == '\0')
+            fpin.getline(line, MaxStr);
         index = -1;
         return '\0';
     }
+    transform(&line[index]);
     return line[index];
 }

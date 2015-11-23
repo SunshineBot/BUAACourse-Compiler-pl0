@@ -18,7 +18,7 @@ enum symbol {
     beginsym, endsym, readsym, writesym,    //4
     eql, neq, lss, leq, gtr, geq,   //6
     plussym, minussym, timessym, slashsym,  //4
-    comma, colon, assign, semicolon, period,   //5
+    comma, semicolon, assign, colon, period,   //5
     lparen, rparen, lbracket, rbracket    //4
 };
 
@@ -33,8 +33,8 @@ enum datatype {
 typedef union {
     int* intd;
     char* chard;
-    int** intarr;
-    char** chararr;
+    int* intarr;
+    char* chararr;
 }identdata;
 
 typedef struct identifierStruct {
@@ -93,11 +93,11 @@ void setData(char name[], char data);
 void setData(char name[], int index, int data);
 void setData(char name[], int index, char data);
 
-int* getInt(identifier* identi);
-char* getChar(identifier* identi);
-int** getIntArray(identifier* identi);
-char** getCharArray(identifier* identi);
-int getLength(identifier* identi);
+int* getInt(char name[]);
+char* getChar(char name[]);
+int* getIntArray(char name[]);
+char* getCharArray(char name[]);
+int getLength(char name[]);
 identtype getIdentType(char name[]);
 datatype getDataType(char name[]);
 int getDataLevel(char name[]);

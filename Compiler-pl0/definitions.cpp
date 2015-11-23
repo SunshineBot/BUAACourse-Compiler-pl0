@@ -21,17 +21,16 @@ char lsStr[MaxStr + 1];
 
 extern int symbolTable[NumRes] = { 0 };
 extern char* symbolConst[NumRes] = {
-    "null", 
-    "ident", "num", "\"", "\'",
-    "const", "var", "array", "of", "integer", "char", "procedure", "function",
-    "if", "then", "else", "while", "do", "for", "to", "by",
-    "begin", "end", "read", "write",
-    "=", "<>", "<", "<=", ">", ">=",
-    "+", "-", "*", "/",
-    ",", ";", ":=", ":", ".",
-    "(", ")", "[", "]"
+    "null",     //1
+    "ident", "num", "\"", "\'",     //4
+    "const", "var", "array", "of", "integer", "char", "procedure", "function",  //8
+    "if", "then", "else", "while", "do", "for", "to", "by",     //8
+    "begin", "end", "read", "write",    //4
+    "=", "<>", "<", "<=", ">", ">=",    //6
+    "+", "-", "*", "/",     //4
+    ",", ";", ":=", ":", ".",       //5
+    "(", ")", "[", "]"      //4
 };
-
 
 
 int identTable[4] = { 0 };
@@ -198,7 +197,7 @@ void setData(char name[], int index, int data) {
     }
     if (tp->identt == functype || tp->identt == vartype) {
         if (tp->datat == intarrtype) {
-            tp->dataaddr->intarr[index] = &data;
+            tp->dataaddr->intarr[index] = data;
         }
         else {
             error(0, lineNumber);   //变量数据类型不对, a integer array is needed.
@@ -221,7 +220,7 @@ void setData(char name[], int index, char data) {
     }
     if (tp->identt == functype || tp->identt == vartype) {
         if (tp->datat == chararrtype) {
-            tp->dataaddr->chararr[index] = &data;
+            tp->dataaddr->chararr[index] = data;
         }
         else {
             error(0, lineNumber);   //变量数据类型不对, a char array is needed.
@@ -232,19 +231,39 @@ void setData(char name[], int index, char data) {
     }
 }
 
-int* getInt(identifier* identi) {
+int* getInt(char name[]) {
+    identifier* identi = getTableItem(name);
+    if (identi==null) {
+        return 0;
+    }
     return identi->dataaddr->intd;
 }
-char* getChar(identifier* identi) {
+char* getChar(char name[]) {
+    identifier* identi = getTableItem(name);
+    if (identi == null) {
+        return 0;
+    }
     return identi->dataaddr->chard;
 }
-int** getIntArray(identifier* identi) {
+int* getIntArray(char name[]) {
+    identifier* identi = getTableItem(name);
+    if (identi == null) {
+        return 0;
+    }
     return identi->dataaddr->intarr;
 }
-char** getCharArray(identifier* identi) {
+char* getCharArray(char name[]) {
+    identifier* identi = getTableItem(name);
+    if (identi == null) {
+        return 0;
+    }
     return identi->dataaddr->chararr;
 }
-int getLength(identifier* identi) {
+int getLength(char name[]) {
+    identifier* identi = getTableItem(name);
+    if (identi == null) {
+        return 0;
+    }
     return identi->lengthOfArray;
 }
 

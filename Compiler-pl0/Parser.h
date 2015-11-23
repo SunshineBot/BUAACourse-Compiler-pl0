@@ -25,20 +25,22 @@ void statement();
 void assignStatement();
 void ifStatement();
 void whileStatement();
+void forStatement();
 void callProcStatement();
 void callFuncStatement();
 void complexStatement();
 void readStatement();
 void writeStatement();
-void forStatement();
 void blankStatement();
-void realParamList();
 
-void expression();
-void term();
-void factor();
+void actualParamList();
 void condition();
 
+void expression();
+int term();
+int factor();
 
+
+void assignIt();
 void assignIt(datatype dt);
 void assignIt(datatype dt, int index);

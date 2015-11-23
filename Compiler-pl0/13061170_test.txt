@@ -1,57 +1,59 @@
-const pi = 3;
+const pi = 3
 var i,j,k:integer;
-	num:integer;
+        num:integer;
     ch:char;
     numarr: array[4] of integer;
 procedure helloworld();
 begin
-    write("hello, pascal!");
+    write("hello, pascal!")
 end;
-procedure gcd2(k,l:integer; var r:integer);
+procedure addition(k,l:integer; var r:integer);
 var s:integer;
 begin
-    s := k mod l;
-    if s <> 0 then
-        gcd2(l,s,r)
-    else
-        r := l
+    s := k + l;
+    r := s
 end;
-function gcd(k,l:integer):integer;
-var s:integer;
+function allAddition(k,l:integer):integer;
+var s,t:integer;
 begin
-    s := k mod l;
-    if s <> 0 then
-        gcd := gcd(l,s)
-    else
-        gcd := l
+    if k>=l then
+    begin
+        t := k;
+        k := l;
+        l := t
+    end;
+    s := 0;
+    for t := k to l by 1 do
+        s := s + t;
+    allAddition := s
 end;
 function getFive():integer;
 var n:integer;
 begin
-	getFive := 5
+        getFive := 5
 end;
 begin
-	helloworld();
-	write("please type in a number : ");
-	read(num);
-	write("you have typed in : ",num);
-	write(", and this is a five: ", getFive());
-	write(". now initialize an array:");
-	for	i := 0 to 4 by 1 do
-	begin
-		numarr[i] := -i;
-		write("numarr[",i);
-		write("] = ",i);
-		write(", ");
-	end;
-	write("i^3 :");
-	while i >= 0 do
-	begin
-		write(" ",i * i * i);
-		i := i - 1;
-	end;
-	write(". gcd of 10 and 2 :", gcd(10,2));
-	gcd2(10,5,k);
-	write(", gcd2 of 10 and 5 :", k);
-	write(". PI = ",pi)
+        helloworld();
+        write("please type in a number : ");
+        read(num);
+        write("you have typed in : ",num);
+        write(", and this is a five: ", getFive());
+        write(". now initialize an array:");
+        for i := 0 to 4 by 1 do
+        begin
+                numarr[i] := -i;
+                write("numarr[",i);
+                write("] = ",i);
+                write(", ")
+        end;
+        write("i^3 :");
+        while i >= 0 do
+        begin
+                write(" ",i * i * i);
+                i := i - 1
+        end;
+        write(". addition of 10 and 2 :", addition(10,2));
+        gcd2(10,5,k);
+        write(", allAddition of 10 and 5 :", k);
+        write(". PI = ",pi)
 end.
