@@ -1,3 +1,4 @@
+//Lexer.cpp
 /*Lexical analyzer ´Ê·¨·ÖÎöÆ÷*/
 /*
 what to do :
@@ -24,7 +25,7 @@ extern int lineNumber;
 ifstream fpin;
 
 extern void error(int, int);
-extern int start();
+extern int printLexerStatistics();
 
 int getSym();
 char getch();
@@ -34,24 +35,25 @@ extern void initLexer() {
     init(fpin);
     ch = getch();
     ch = getch();
+    getSym();
 }
 
-//extern int start() {
-//    init(fpin);
-//    ch = getch();
-//    while (getSym() != -1);
-//    cout << endl;
-//    cout << setw(4) << "num"
-//        << setw(12) << "type" << ' '
-//        << setw(6) << "amount" << endl;
-//    /*for (int i = 0; i < NumRes; i++) {
-//        cout << setw(4) << i + 1
-//            << setw(12) << resConst[i] << ' '
-//            << setw(6) << symbolTable[i] << endl;
-//    }
-//    cout << endl << "Amount of lines : " << lineNumber << endl;*/
-//    return 0;
-//}
+extern int printLexerStatistics() {
+    init(fpin);
+    ch = getch();
+    while (getSym() != -1);
+    cout << endl;
+    cout << setw(4) << "num"
+        << setw(12) << "type" << ' '
+        << setw(6) << "amount" << endl;
+    /*for (int i = 0; i < NumRes; i++) {
+        cout << setw(4) << i + 1
+            << setw(12) << resConst[i] << ' '
+            << setw(6) << symbolTable[i] << endl;
+    }
+    cout << endl << "Amount of lines : " << lineNumber << endl;*/
+    return 0;
+}
 
 
 
@@ -59,7 +61,7 @@ extern int getSym() {
     //char ch;
     symbol r;
     //ch = getch();
-    while (ch == ' ') {
+    while (ch == ' ' || ch == '\t') {
         ch = getch();
     }
     transform(&ch);
@@ -248,7 +250,7 @@ char getch() {
             return -1;
         }
         fpin.getline(line, MaxStr);
-        while (line[0] == '\0')
+        while (!fpin.eof() && line[0] == '\0')
             fpin.getline(line, MaxStr);
         index = -1;
         return '\0';

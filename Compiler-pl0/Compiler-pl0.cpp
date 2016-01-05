@@ -1,22 +1,28 @@
-#include "definitions.h"
+//Compiler-pl0.cpp
 #include <iostream>
-#include <iomanip>
-using namespace std;
-extern int start();
+#include "definitions.h"
+#include "Interpreter.h"
+#include "TableMgr.h"
+
+//using namespace std;
+extern int printLexerStatistics();
 extern void initLexer();
-extern int getSym();
 extern int startParser();
-
-int main() {
-    //start();
-    initLexer();
-    getSym();
-    /*while (getSym() != -1);
-    cout << endl;
-    cout << setw(4) << "num"
-        << setw(12) << "type" << ' '
-        << setw(6) << "amount" << endl;*/
-
-    startParser();
-    //return 0;
+extern void printMcode();
+//extern void printLevelWordTable();
+int main(int argc, char* argv[]) {
+    if (argc == 2) {
+        strcpy_s(filename, argv[1]);
+    }
+    else {
+        //cin >> filename;
+        cin.getline(filename, MaxStr);
+        
+    }
+    initLexer();    //Initialize Lexer and other things.
+    startParser();  //Start parsing.
+    interpret();    //Interpret Mcode to MIPS code.
+    //printMcode();
+    //printWordTable();
+    return 0;
 }

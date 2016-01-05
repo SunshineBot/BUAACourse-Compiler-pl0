@@ -1,5 +1,9 @@
+//definitions.h
 #include <fstream>
 using namespace std;
+#ifndef _definitions_h_
+#define _definitions_h_
+
 
 extern void error(int, int);
 
@@ -23,14 +27,29 @@ enum symbol {
 };
 
 enum identtype {
-    vartype, consttype, proctype, functype, errtype
+    vartype, consttype, proctype, functype, paramtype, paramvartype, errtype
 };
 
 enum datatype {
     nul, chartype, inttype, chararrtype, intarrtype
 };
 
-typedef union {
+enum exptype {
+    //变量或常量/数组项/数字/函数调用/算式
+    expConst, expVar, expArray, expNum, expFunc, expParamVar, expFormula
+};
+typedef struct expDataStruct {
+    exptype type;
+    char name[MaxRes + 1];
+    int index;
+    expDataStruct() {
+        type = expFormula;
+        name[0] = '\0';
+        index = 0;
+    }
+}expData;
+
+typedef union identdataUnion {
     int* intd;
     char* chard;
     int* intarr;
@@ -38,31 +57,65 @@ typedef union {
 }identdata;
 
 typedef struct identifierStruct {
-    char name[MaxRes+1];
+    char name[MaxRes + 1];
     identtype identt;
     datatype datat;
     int lv;
-    int lengthOfArray;
+    int offset;
+    int length;
     identdata* dataaddr;
     struct identifierStruct* next;
+
+    identifierStruct() {
+        name[0] = '\0';
+        identt = errtype;
+        datat = nul;
+        lv = 0;
+        offset = 0;
+        length = 0;
+        dataaddr = null;
+        next = null;
+    }
+    ~identifierStruct() {
+        if (dataaddr != null)
+            free(dataaddr);
+    }
 }identifier;
+
+typedef struct _Mcode {
+    char cmd[10];
+    char op1[20];
+    char op2[20];
+    char op3[20];
+    struct _Mcode* next;
+    _Mcode() {
+        cmd[0] = '\0';
+        op1[0] = '\0';
+        op2[0] = '\0';
+        op3[0] = '\0';
+        next = null;
+    }
+}Mcode;
 /*
 &int : identifier->dataaddr->intd;
 &char : identifier->dataaddr->chard;
 
 &intarr : identifier->dataaddr->intarr;
 &chararr : identifier->dataaddr->chararr;
-length of arr : identifier->lengthOfArray;
+length of arr : identifier->length;
 */
+extern char filename[MaxStr];
+
 extern int lineNumber;
 extern char ch;
 extern char* symbolConst[NumRes];
 extern int symbolTable[NumRes];
 extern symbol sym;
-
+extern int errorAmount;
 
 extern int level;
 extern int complexLevel;
+extern int offset;
 
 extern char lsIdent[MaxRes + 1];
 extern int lsNum;
@@ -70,7 +123,7 @@ extern char lsChar;
 extern char lsStr[MaxStr + 1];
 
 extern identifier *tableHead;
-//extern identifier *tp;
+extern Mcode *McodeHead, *pc;
 
 void init(ifstream&);
 
@@ -85,19 +138,4 @@ symbol adder(char ch);
 void setSymbol(char c[]);
 void setSymbol(char ch);
 
-//operations of word table:
-void addTable(char name[], identtype identt, datatype datat, int lv);
-void addTable(char name[], identtype identt, datatype datat, int lv, int length);
-void setData(char name[], int data);
-void setData(char name[], char data);
-void setData(char name[], int index, int data);
-void setData(char name[], int index, char data);
-
-int* getInt(char name[]);
-char* getChar(char name[]);
-int* getIntArray(char name[]);
-char* getCharArray(char name[]);
-int getLength(char name[]);
-identtype getIdentType(char name[]);
-datatype getDataType(char name[]);
-int getDataLevel(char name[]);
+#endif // !_definitions_h_

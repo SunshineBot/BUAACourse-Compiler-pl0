@@ -1,5 +1,5 @@
 //Parser.h
-
+#include "definitions.h"
 extern int getSym();
 extern void error(int, int);
 
@@ -7,19 +7,19 @@ void semiProgram();
 
 void constDeclaration();
 void constDefinition();
-void constData();
+int constData(datatype* dtp);
 
 void varDeclaration();
 void varDefinition();
 
-void type();
-void baseType();
+datatype type(char start[]);
+datatype baseType();
 
 void procedureDeclaration();
 void procedureHead();
 void functionDeclaration();
 void functionHead();
-void paramList();
+int paramList();
 
 void statement();
 void assignStatement();
@@ -33,14 +33,15 @@ void readStatement();
 void writeStatement();
 void blankStatement();
 
-void actualParamList();
-void condition();
+bool actualParamList(char name[]);
+symbol condition();
 
-void expression();
-int term();
-int factor();
+expData* expression();
+expData* term();
+expData* factor();
 
 
-void assignIt();
+void assignIt(char name[]);
+void assignIt(char name[], int index);
 void assignIt(datatype dt);
 void assignIt(datatype dt, int index);

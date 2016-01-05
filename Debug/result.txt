@@ -1,50 +1,395 @@
-An error has occured. Error code = -1 at line 58. Reason : arrive at END OF FILE unexpectdly.
-
- num        type amount
-   1       ident     66
-   2         num     14
-   3         str     13
-   4        null     32
-   5       const      1
-   6         var      5
-   7       array      1
-   8          of      1
-   9     integer     11
-  10        char      1
-  11   procedure      2
-  12    function      2
-  13          if      2
-  14        then      2
-  15        else      2
-  16       while      1
-  17          do      2
-  18         for      1
-  19          to      1
-  20          by      1
-  21       begin      7
-  22         end      7
-  23        read      1
-  24       write     13
-  25           =      1
-  26          <>      2
-  27           <      0
-  28          <=      0
-  29           >      0
-  30          >=      1
-  31           +      0
-  32           -      2
-  33           *      2
-  34           /      0
-  35           ,     18
-  36           ;     38
-  37          :=      9
-  38           :     12
-  39           .      1
-  40           (     24
-  41           )     24
-  42           [      2
-  43           ]      2
-  44           "     26
-  45           '      0
-
-Amount of lines : 58
+add       $fp, $sp, $0
+j         semiProgLabel1
+p1:
+j         semiProgLabel2
+p2:
+j         semiProgLabel3
+p3:
+j         semiProgLabel4
+p4:
+j         semiProgLabel5
+p5:
+j         semiProgLabel6
+semiProgLabel6:
+addi      $t7, $0, 5
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+lw        $t1, -56($sp)
+sw        $t9, -0($t1)
+addi      $t7, $0, 5
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+lw        $t0, -0($fp)
+sw        $t9, -16($t0)
+addi      $t7, $0, 5
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+lw        $t0, -4($fp)
+sw        $t9, -72($t0)
+jr        $ra
+semiProgLabel5:
+lw        $t7, -60($sp)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+subi      $t9, $sp, 60
+sw        $t9, -140($sp)
+lw        $t0, -0($fp)
+sw        $t0, -64($sp)
+lw        $t0, -4($fp)
+sw        $t0, -68($sp)
+lw        $t0, -8($fp)
+sw        $t0, -72($sp)
+lw        $t0, -12($fp)
+sw        $t0, -76($sp)
+sw        $sp, -80($sp)
+sw        $v0, -84($sp)
+sw        $t8, -88($sp)
+sw        $t9, -92($sp)
+sw        $s0, -96($sp)
+sw        $s1, -100($sp)
+sw        $s2, -104($sp)
+sw        $s3, -108($sp)
+sw        $s4, -112($sp)
+sw        $s5, -116($sp)
+sw        $s6, -120($sp)
+sw        $s7, -124($sp)
+sw        $ra, -128($sp)
+sw        $fp, -132($sp)
+sw        $sp, -136($sp)
+subi      $fp, $sp, 64
+subi      $sp, $sp, 84
+jal       p5
+lw        $v0, -0($sp)
+lw        $t8, -4($sp)
+lw        $t9, -8($sp)
+lw        $s0, -12($sp)
+lw        $s1, -16($sp)
+lw        $s2, -20($sp)
+lw        $s3, -24($sp)
+lw        $s4, -28($sp)
+lw        $s5, -32($sp)
+lw        $s6, -36($sp)
+lw        $s7, -40($sp)
+lw        $ra, -44($sp)
+lw        $fp, -48($sp)
+lw        $sp, -52($sp)
+lw        $t7, -60($sp)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+lw        $t1, -56($sp)
+sw        $t9, -0($t1)
+addi      $t7, $0, 4
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+lw        $t0, -0($fp)
+sw        $t9, -12($t0)
+addi      $t7, $0, 4
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+lw        $t0, -4($fp)
+sw        $t9, -68($t0)
+jr        $ra
+semiProgLabel4:
+lw        $t1, -56($sp)
+lw        $t7, -0($t1)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+lw        $t9, -56($sp)
+sw        $t9, -132($sp)
+lw        $t0, -0($fp)
+sw        $t0, -60($sp)
+lw        $t0, -4($fp)
+sw        $t0, -64($sp)
+lw        $t0, -8($fp)
+sw        $t0, -68($sp)
+sw        $sp, -72($sp)
+sw        $v0, -76($sp)
+sw        $t8, -80($sp)
+sw        $t9, -84($sp)
+sw        $s0, -88($sp)
+sw        $s1, -92($sp)
+sw        $s2, -96($sp)
+sw        $s3, -100($sp)
+sw        $s4, -104($sp)
+sw        $s5, -108($sp)
+sw        $s6, -112($sp)
+sw        $s7, -116($sp)
+sw        $ra, -120($sp)
+sw        $fp, -124($sp)
+sw        $sp, -128($sp)
+subi      $fp, $sp, 60
+subi      $sp, $sp, 76
+jal       p4
+lw        $v0, -0($sp)
+lw        $t8, -4($sp)
+lw        $t9, -8($sp)
+lw        $s0, -12($sp)
+lw        $s1, -16($sp)
+lw        $s2, -20($sp)
+lw        $s3, -24($sp)
+lw        $s4, -28($sp)
+lw        $s5, -32($sp)
+lw        $s6, -36($sp)
+lw        $s7, -40($sp)
+lw        $ra, -44($sp)
+lw        $fp, -48($sp)
+lw        $sp, -52($sp)
+addi      $t7, $0, 3
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+lw        $t0, -0($fp)
+sw        $t9, -8($t0)
+addi      $t7, $0, 3
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+lw        $t0, -4($fp)
+sw        $t9, -64($t0)
+jr        $ra
+semiProgLabel3:
+lw        $t0, -0($fp)
+lw        $t7, -20($t0)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+lw        $t0, -8($fp)
+subi      $t9, $t0, 20
+sw        $t9, -124($sp)
+lw        $t0, -0($fp)
+sw        $t0, -56($sp)
+lw        $t0, -4($fp)
+sw        $t0, -60($sp)
+sw        $sp, -64($sp)
+sw        $v0, -68($sp)
+sw        $t8, -72($sp)
+sw        $t9, -76($sp)
+sw        $s0, -80($sp)
+sw        $s1, -84($sp)
+sw        $s2, -88($sp)
+sw        $s3, -92($sp)
+sw        $s4, -96($sp)
+sw        $s5, -100($sp)
+sw        $s6, -104($sp)
+sw        $s7, -108($sp)
+sw        $ra, -112($sp)
+sw        $fp, -116($sp)
+sw        $sp, -120($sp)
+subi      $fp, $sp, 56
+subi      $sp, $sp, 68
+jal       p3
+lw        $v0, -0($sp)
+lw        $t8, -4($sp)
+lw        $t9, -8($sp)
+lw        $s0, -12($sp)
+lw        $s1, -16($sp)
+lw        $s2, -20($sp)
+lw        $s3, -24($sp)
+lw        $s4, -28($sp)
+lw        $s5, -32($sp)
+lw        $s6, -36($sp)
+lw        $s7, -40($sp)
+lw        $ra, -44($sp)
+lw        $fp, -48($sp)
+lw        $sp, -52($sp)
+lw        $t0, -4($fp)
+lw        $t7, -76($t0)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+lw        $t0, -4($fp)
+subi      $t9, $t0, 76
+sw        $t9, -124($sp)
+lw        $t0, -0($fp)
+sw        $t0, -56($sp)
+lw        $t0, -4($fp)
+sw        $t0, -60($sp)
+sw        $sp, -64($sp)
+sw        $v0, -68($sp)
+sw        $t8, -72($sp)
+sw        $t9, -76($sp)
+sw        $s0, -80($sp)
+sw        $s1, -84($sp)
+sw        $s2, -88($sp)
+sw        $s3, -92($sp)
+sw        $s4, -96($sp)
+sw        $s5, -100($sp)
+sw        $s6, -104($sp)
+sw        $s7, -108($sp)
+sw        $ra, -112($sp)
+sw        $fp, -116($sp)
+sw        $sp, -120($sp)
+subi      $fp, $sp, 56
+subi      $sp, $sp, 68
+jal       p3
+lw        $v0, -0($sp)
+lw        $t8, -4($sp)
+lw        $t9, -8($sp)
+lw        $s0, -12($sp)
+lw        $s1, -16($sp)
+lw        $s2, -20($sp)
+lw        $s3, -24($sp)
+lw        $s4, -28($sp)
+lw        $s5, -32($sp)
+lw        $s6, -36($sp)
+lw        $s7, -40($sp)
+lw        $ra, -44($sp)
+lw        $fp, -48($sp)
+lw        $sp, -52($sp)
+addi      $t7, $0, 2
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+lw        $t0, -4($fp)
+sw        $t9, -60($t0)
+addi      $t7, $0, 2
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+lw        $t0, -0($fp)
+sw        $t9, -4($t0)
+jr        $ra
+semiProgLabel2:
+lw        $t0, -0($fp)
+sw        $t0, -80($sp)
+sw        $sp, -84($sp)
+sw        $v0, -88($sp)
+sw        $t8, -92($sp)
+sw        $t9, -96($sp)
+sw        $s0, -100($sp)
+sw        $s1, -104($sp)
+sw        $s2, -108($sp)
+sw        $s3, -112($sp)
+sw        $s4, -116($sp)
+sw        $s5, -120($sp)
+sw        $s6, -124($sp)
+sw        $s7, -128($sp)
+sw        $ra, -132($sp)
+sw        $fp, -136($sp)
+sw        $sp, -140($sp)
+subi      $fp, $sp, 80
+subi      $sp, $sp, 88
+jal       p2
+lw        $v0, -0($sp)
+lw        $t8, -4($sp)
+lw        $t9, -8($sp)
+lw        $s0, -12($sp)
+lw        $s1, -16($sp)
+lw        $s2, -20($sp)
+lw        $s3, -24($sp)
+lw        $s4, -28($sp)
+lw        $s5, -32($sp)
+lw        $s6, -36($sp)
+lw        $s7, -40($sp)
+lw        $ra, -44($sp)
+lw        $fp, -48($sp)
+lw        $sp, -52($sp)
+addi      $t7, $0, 1
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+lw        $t0, -0($fp)
+sw        $t9, -0($t0)
+addi      $t7, $0, 1
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+sw        $t9, -56($sp)
+lw        $t7, -56($sp)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+addi      $v0, $0, 1
+addi      $a0, $t9, 0
+syscall   
+lw        $t7, -60($sp)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+addi      $v0, $0, 1
+addi      $a0, $t9, 0
+syscall   
+lw        $t7, -64($sp)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+addi      $v0, $0, 1
+addi      $a0, $t9, 0
+syscall   
+lw        $t7, -68($sp)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+addi      $v0, $0, 1
+addi      $a0, $t9, 0
+syscall   
+lw        $t7, -72($sp)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+addi      $v0, $0, 1
+addi      $a0, $t9, 0
+syscall   
+lw        $t7, -76($sp)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+addi      $v0, $0, 1
+addi      $a0, $t9, 0
+syscall   
+jr        $ra
+semiProgLabel1:
+sw        $sp, -24($sp)
+sw        $v0, -28($sp)
+sw        $t8, -32($sp)
+sw        $t9, -36($sp)
+sw        $s0, -40($sp)
+sw        $s1, -44($sp)
+sw        $s2, -48($sp)
+sw        $s3, -52($sp)
+sw        $s4, -56($sp)
+sw        $s5, -60($sp)
+sw        $s6, -64($sp)
+sw        $s7, -68($sp)
+sw        $ra, -72($sp)
+sw        $fp, -76($sp)
+sw        $sp, -80($sp)
+subi      $fp, $sp, 24
+subi      $sp, $sp, 28
+jal       p1
+lw        $v0, -0($sp)
+lw        $t8, -4($sp)
+lw        $t9, -8($sp)
+lw        $s0, -12($sp)
+lw        $s1, -16($sp)
+lw        $s2, -20($sp)
+lw        $s3, -24($sp)
+lw        $s4, -28($sp)
+lw        $s5, -32($sp)
+lw        $s6, -36($sp)
+lw        $s7, -40($sp)
+lw        $ra, -44($sp)
+lw        $fp, -48($sp)
+lw        $sp, -52($sp)
+lw        $t7, -0($sp)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+addi      $v0, $0, 1
+addi      $a0, $t9, 0
+syscall   
+lw        $t7, -4($sp)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+addi      $v0, $0, 1
+addi      $a0, $t9, 0
+syscall   
+lw        $t7, -8($sp)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+addi      $v0, $0, 1
+addi      $a0, $t9, 0
+syscall   
+lw        $t7, -12($sp)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+addi      $v0, $0, 1
+addi      $a0, $t9, 0
+syscall   
+lw        $t7, -16($sp)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+addi      $v0, $0, 1
+addi      $a0, $t9, 0
+syscall   
+lw        $t7, -20($sp)
+add       $t8, $t7, $0
+add       $t9, $t8, $0
+addi      $v0, $0, 1
+addi      $a0, $t9, 0
+syscall   

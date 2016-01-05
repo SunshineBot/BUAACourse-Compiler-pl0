@@ -1,6 +1,12 @@
+//Err.cpp
 #include <iostream>
 #include "definitions.h"
+
 using namespace std;
+
+extern int getSym();
+
+void skipFor();
 
 extern void error(int code, int lineNumber) {
     //cout << "error code : " << code << endl;
@@ -9,17 +15,14 @@ extern void error(int code, int lineNumber) {
             cout << "An error has occured. Error code = " << code
                 << " at line " << lineNumber << ". Reason : ";
             cout << "arrive at END OF FILE unexpectdly.";
+            errorAmount++;
         }
         return;
     }
+    errorAmount++;
     cout << "An error has occured. Error code = " << code
         << " at line " << lineNumber << ". Reason : ";
     switch (code) {
-        /*case -1:
-            if (complexLevel != 0) {
-                cout << "arrive at END OF FILE unexpectdly.";
-            }
-            break;*/
         case 0:
             cout << "unknown error.";
             break;
@@ -43,6 +46,9 @@ extern void error(int code, int lineNumber) {
             break;
         case 8:
             cout << "\"const\" is needed.";
+            while (sym != semicolon)
+                getSym();
+            getSym();
             break;
         case 9:
             cout << "an assign symbol is needed.";
@@ -125,8 +131,56 @@ extern void error(int code, int lineNumber) {
         case 35:
             cout << "\"begin\" is needed.";
             break;
+        case 36:
+            cout << "step can't be zero.";
+            break;
+        case 37:
+            cout << "identifier type is wrong, function or variable is needed.";
+            break;
+        case 38:
+            cout << "out of index bound.";
+            break;
+        case 39:
+            cout << "this variable can't be assigned.";
+            break;
+        case 40:
+            cout << "can't find the function identifier.";
+            break;
+        case 41:
+            cout << "can't find this identifier.";
+            break;
+        case 42:
+            cout << "can't find the correct function name.";
+            break;
+        case 43:
+            cout << "parameter list dispatches.";
+            break;
+        case 44:
+            cout << "invalid expression.";
+            break;
+        case 45:
+            cout << "an assign symbol is needed in a For Statement.";
+            break;
+        case 46:
+            cout << "a number or a char is needed in For Statement.";
+            break;
+        case 47:
+            cout << "a comma or a right parenthsis is needed.";
+            break;
         default:
             break;
     }
     cout << endl;
+}
+
+void skipFor() {
+    int beginFlag = 0;
+    while (beginFlag > 0 || sym != semicolon) {
+        if (sym == beginsym)
+            beginFlag++;
+        if (sym == endsym)
+            beginFlag--;
+        getSym();
+    }
+    getSym();
 }

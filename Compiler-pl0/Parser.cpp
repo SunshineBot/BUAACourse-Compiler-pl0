@@ -1,16 +1,17 @@
+//Parser.cpp
 #include <iomanip>
 #include <iostream>
 #include "definitions.h"
 #include "Parser.h"
+#include "Generator.h"
+#include "TableMgr.h"
 using namespace std;
 
-//最右端是终结负号的子程序需要getSym();
-
-datatype expType;
-int expData;
-char name[MaxRes];
+//最右端是终结符号的子程序需要getSym();
 
 int numOfBlank = 0;
+
+int indexOfLabel = 0;
 
 extern int startParser() {
     semiProgram();
@@ -19,30 +20,44 @@ extern int startParser() {
 
 
 void semiProgram() {
-    cout << setw(numOfBlank++*4) << "" << "Into a semi-Program: " << endl;
+    level++;
+    indexOfLabel++;
+    char programLabel[20];
+    sprintf_s(programLabel, "semiProgLabel%d", indexOfLabel);
+    //cout << setw(numOfBlank++*4) << "" << "Into a semi-Program: " << endl;
     if (sym == constsym) {
         constDeclaration();
     }
     if (sym == varsym) {
         varDeclaration();
     }
+    int offset_t = offset;
+    g_j(programLabel);
     while (sym == procsym || sym == funcsym) {
+        offset = 56;
         if (sym == procsym) {
             procedureDeclaration();
         }
-        if (sym == funcsym) {
+        else if (sym == funcsym) {
             functionDeclaration();
         }
     }
-    /*cout << setw(numOfBlank++ * 4)<<"";*/
+    offset = offset_t;
+    g_label(programLabel);
     complexStatement();
-    cout << setw(--numOfBlank * 4) << "" << "Semi-Program finished." << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "Semi-Program finished." << endl;
+    //printLevelWordTable();
+    //cout << "----------------------------------------------------------------------" << endl;
+
+    deleteCurrentLvWord();
+    level--;
 }
 
 void constDeclaration() {
-    cout << setw(numOfBlank++*4) << "" << "Const Declaration started." << endl;
+    //cout << setw(numOfBlank++*4) << "" << "Const Declaration started." << endl;
     if (sym != constsym) {
         error(8, lineNumber);   //error : "const" is needed.
+        return;
     }
     getSym();
     constDefinition();
@@ -54,15 +69,21 @@ void constDeclaration() {
         error(7, lineNumber);   //error : a semicolon is needed.
     }
     getSym();
-    cout << setw(--numOfBlank * 4) << "" << "Const Declaration finished." << endl << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "Const Declaration finished." << endl << endl;
 }
 void constDefinition() {
-    cout << setw(numOfBlank++ * 4) << "" << "Const Definition started." << endl;
+    //cout << setw(numOfBlank++ * 4) << "" << "Const Definition started." << endl;
+    char name[MaxRes + 1];
+    int data;
+    datatype dtp;
     if (sym == ident) {
+        strcpy_s(name, lsIdent);
         getSym();
         if (sym == eql) {
             getSym();
-            constData();
+            data = constData(&dtp);
+            addTable(name, consttype, dtp, data, level);
+            g_save_const(name);
         }
         else {
             error(9, lineNumber);   //error : an assign symbol is needed.
@@ -71,11 +92,11 @@ void constDefinition() {
     else {
         error(10, lineNumber);   //error : an identifier is needed.
     }
-    cout << setw(--numOfBlank * 4) << "" << "Const Definition finished." << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "Const Definition finished." << endl;
 }
-void constData() {
+int constData(datatype* tp) {
     bool negative = false;
-    
+    int n;
     if (sym == plussym || sym == minussym) {
         if (sym == minussym) {
             negative = true;
@@ -83,7 +104,7 @@ void constData() {
         getSym();
     }
     if (sym == num) {
-        int n;
+        *tp = inttype;
         if (negative) {
             n = -lsNum;
         }
@@ -92,7 +113,7 @@ void constData() {
         }
     }
     else if (sym == chr) {
-        char n;
+        *tp = chartype;
         if (negative) {
             n = -lsChar;
         }
@@ -104,11 +125,12 @@ void constData() {
         error(11, lineNumber);   //error : a number or a char is needed.
     }
     getSym();
-    cout << setw(numOfBlank * 4) << "" << "This is data of const type." << endl;
+    //cout << setw(numOfBlank * 4) << "" << "This is data of const type." << endl;
+    return n;
 }
 
 void varDeclaration() {
-    cout << setw(numOfBlank++ * 4) << "" << "Variable Declaration started." << endl;
+    //cout << setw(numOfBlank++ * 4) << "" << "Variable Declaration started." << endl;
     if (sym != varsym) {
         error(12, lineNumber);   //error : "var" is needed.
     }
@@ -119,24 +141,28 @@ void varDeclaration() {
     }
     getSym();
     while (sym == ident) {
-        //getSym();
         varDefinition();
         if (sym != semicolon) {
             error(7, lineNumber);   //error : a semicolon is needed.
         }
         getSym();
     }
-    //procedureDeclaration();
-    cout << setw(--numOfBlank * 4) << "" << "Variable Declaration finished." << endl << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "Variable Declaration finished." << endl << endl;
 }
 void varDefinition() {
-    cout << setw(numOfBlank++ * 4) << "" << "Variable Definition started." << endl;
+    //cout << setw(numOfBlank++ * 4) << "" << "Variable Definition started." << endl;
+    char start[MaxRes + 1];
+    char name[MaxRes + 1];
     if (sym == ident) {
+        strcpy_s(start, lsIdent);
+        strcpy_s(name, lsIdent);
+        addTable(name, vartype, level);
         getSym();
         while (sym == comma) {
             getSym();
             if (sym == ident) {
-
+                strcpy_s(name, lsIdent);
+                addTable(name, vartype, level);
                 getSym();
             }
             else {
@@ -145,30 +171,46 @@ void varDefinition() {
         }
         if (sym == colon) {
             getSym();
-            type();
+            datatype dt = type(start);
         }
         else {
             error(13, lineNumber);   //error : a colon is needed.
         }
     }
-    cout << setw(--numOfBlank * 4) << "" << "Variable Definition finished." << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "Variable Definition finished." << endl;
+    //free the memory allocated.
+    
 }
 
-void type() {
+datatype type(char start[]) {
+    datatype dt;
+    int length;
     if (sym == intsym || sym == charsym) {
-        baseType();
+        dt = baseType();
+        setDataType(start, dt);
     }
     else if(sym == arraysym) {
         getSym();
         if (sym == lbracket) {
             getSym();
             if (sym == num) {
+                length = lsNum;
                 getSym();
                 if (sym == rbracket) {
                     getSym();
                     if (sym == ofsym) {
                         getSym();
-                        baseType();
+                        dt = baseType();
+                        if (dt == inttype) {
+                            dt = intarrtype;
+                        }
+                        else if (dt == chartype) {
+                            dt = chararrtype;
+                        }
+                        else {
+                            dt = nul;
+                        }
+                        setDataType(start, dt, length);
                     }
                     else {
                         error(14, lineNumber);   //error : the word "of" is needed.
@@ -189,43 +231,61 @@ void type() {
     else {
         error(18, lineNumber);   //error : type name is needed.
     }
-    cout << setw(numOfBlank * 4) << "" << "a type reserved word." << endl;
+    //cout << setw(numOfBlank * 4) << "" << "a type reserved word." << endl;
+    return dt;
 }
-void baseType() {
-    if (sym == intsym || sym == charsym) {
+datatype baseType() {
+    datatype dt;
+    if (sym == intsym) {
+        dt = inttype;
+        getSym();
+    }
+    else if (sym == charsym) {
+        dt = chartype;
         getSym();
     }
     else {
         error(19, lineNumber);   //error : no this type.
     }
-    //getSym();
-    cout << setw(numOfBlank * 4) << "" << "a base type reserved word." << endl;
+    //cout << setw(numOfBlank * 4) << "" << "a base type reserved word." << endl;
+    return dt;
 }
 
 void procedureDeclaration() {
-    cout << setw(numOfBlank++ * 4) << "" << "Procedure Declaration started." << endl;
+    //cout << setw(numOfBlank++ * 4) << "" << "Procedure Declaration started." << endl;
     procedureHead();
     semiProgram();
+    g_jr();
     if (sym == semicolon) {
         getSym();
     }
     else {
         error(7, lineNumber);   //error : a semicolon is needed.
     }
-    cout << setw(--numOfBlank * 4) << "" << "Procedure Declaration finished." << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "Procedure Declaration finished." << endl;
 }
 void procedureHead() {
-    cout << setw(numOfBlank++ * 4) << "" << "Procedure Head started." << endl;
+    //cout << setw(numOfBlank++ * 4) << "" << "Procedure Head started." << endl;
+    int paramCounter = 0;
+    indexOfLabel++;
+    char procname[MaxRes + 1];
     if (sym == procsym) {
         getSym();
         if (sym == ident) {
-            cout << setw(numOfBlank * 4) << "" << "Procedure Name : " << lsIdent << endl;
+            strcpy_s(procname, lsIdent);
+            //sprintf_s(procname, "%s_%d", lsIdent, indexOfLabel);
+            g_label(procname, indexOfLabel);
+            addTable(procname, proctype, level);
+            //cout << setw(numOfBlank * 4) << "" << "Procedure Name : " << lsIdent << endl;
+            //level++;
             getSym();
             if (sym == lparen) {
                 getSym();
-                if (sym == ident) {
-                    paramList();
+                paramCounter = 0;
+                if (sym == ident || sym == varsym) {
+                    paramCounter = paramList();
                 }
+                setParamLengthAndIndex(procname, paramCounter, indexOfLabel);
                 if (sym == rparen) {
                     getSym();
                     if (sym == semicolon) {
@@ -250,38 +310,50 @@ void procedureHead() {
     else {
         error(22, lineNumber);   //error : "procedure"is needed.
     }
-    cout << setw(--numOfBlank * 4) << "" << "Procedure Head finished." << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "Procedure Head finished." << endl;
 }
 
 void functionDeclaration() {
-    cout << setw(numOfBlank++ * 4) << "" << "Function Declaration started." << endl;
+    //cout << setw(numOfBlank++ * 4) << "" << "Function Declaration started." << endl;
     functionHead();
     semiProgram();
+    g_jr();
     if (sym == semicolon) {
         getSym();
     }
     else {
         error(7, lineNumber);   //error : a semicolon is needed.
     }
-    cout << setw(--numOfBlank * 4) << "" << "Function Declaration finished." << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "Function Declaration finished." << endl;
 }
 void functionHead() {
-    cout << setw(numOfBlank++ * 4) << "" << "Function Head started." << endl;
+    //cout << setw(numOfBlank++ * 4) << "" << "Function Head started." << endl;
+    int paramCounter = 0;
+    indexOfLabel++;
+    char funcname[MaxRes + 1];
     if (sym == funcsym) {
         getSym();
         if (sym == ident) {
-            cout << setw(numOfBlank * 4) << "" << "Function Name : " << lsIdent << endl;
+            strcpy_s(funcname, lsIdent);
+            //sprintf_s(funcname, "%s_%d", lsIdent, indexOfLabel);
+            g_label(funcname, indexOfLabel);
+            addTable(funcname, functype, level);
+            //cout << setw(numOfBlank * 4) << "" << "Function Name : " << lsIdent << endl;
+            //level++;
             getSym();
             if (sym == lparen) {
                 getSym();
-                if (sym == ident) {
-                    paramList();
+                paramCounter = 0;
+                if (sym == ident || sym == varsym) {
+                    paramCounter = paramList();
                 }
+                setParamLengthAndIndex(funcname, paramCounter, indexOfLabel);
                 if (sym == rparen) {
                     getSym();
                     if (sym == colon) {
                         getSym();
-                        baseType();
+                        datatype dt = baseType();
+                        setFuncDataType(funcname, dt);
                         if (sym == semicolon) {
                             getSym();
                         }
@@ -308,22 +380,41 @@ void functionHead() {
     else {
         error(23, lineNumber);   //error : "function"is needed.
     }
-    cout << setw(--numOfBlank * 4) << "" << "Function Head finished." << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "Function Head finished." << endl;
 }
-void paramList() {
-    cout << setw(numOfBlank++ * 4) << "" << "Parameter List started." << endl;
+int paramList() {
+    //cout << setw(numOfBlank++ * 4) << "" << "Parameter List started." << endl;
+    int paramCounter = 0;
+    char name[MaxRes + 1];
+    char start[MaxRes + 1];
     bool varFlag = false;
     if (sym == varsym) {
         varFlag = true;
         getSym();
     }
     if (sym == ident) {
+        strcpy_s(name, lsIdent);
+        strcpy_s(start, lsIdent);
+        paramCounter++;
+        if (varFlag) {
+            addTable(name, paramvartype, level);
+        }
+        else {
+            addTable(name, paramtype, level);
+        }
         getSym();
         while (sym == comma) {
             getSym();
             if (sym == ident) {
+                paramCounter++;
+                strcpy_s(name, lsIdent);
+                if (varFlag) {
+                    addTable(name, paramvartype, level);
+                }
+                else {
+                    addTable(name, paramtype, level);
+                }
                 getSym();
-                ;
             }
             else {
                 error(10, lineNumber);   //error : an identifier is needed.
@@ -331,10 +422,11 @@ void paramList() {
         }
         if (sym == colon) {
             getSym();
-            baseType();
+            datatype dt = baseType();
+            setDataType(start, dt);
             while (sym == semicolon) {
                 getSym();
-                paramList();
+                paramCounter += paramList();
             }
         }
         else {
@@ -344,36 +436,26 @@ void paramList() {
     else {
         error(10, lineNumber);   //error : an identifier is needed.
     }
-    cout << setw(--numOfBlank * 4) << "" << "Parameter List finished." << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "Parameter List finished." << endl;
+    return paramCounter;
 }
 
 void statement() {
-    cout << setw(numOfBlank++ * 4) << "" << "A statement started. ";
+    //cout << setw(numOfBlank++ * 4) << "" << "A statement started. ";
     identtype t;
     switch (sym) {
         case ident:
-            getSym();
-            if (sym == assign || sym == lbracket) {
+            t = getIdentType(lsIdent);
+            if (t == vartype || t == paramtype || t == paramvartype || t == functype) {
                 assignStatement();
             }
-            else if(sym == lparen) {
+            else if(t == proctype) {
                 callProcStatement();
             }
             else {
                 error(24, lineNumber);
                 //error : unknown statement. Maybe a variable or a procedure is needed.
             }
-            //t = getIdentType(lsIdent);
-            //if (t == vartype) {
-            //    assignStatement();
-            //}
-            //else if(t == proctype) {
-            //    callProcStatement();
-            //}
-            //else {
-            //    error(24, lineNumber);
-            //    //error : unknown statement. Maybe a variable or a procedure is needed.
-            //}
             break;
         case ifsym:
             ifStatement();
@@ -395,46 +477,48 @@ void statement() {
             writeStatement();
             break;
         default:
-            error(25, lineNumber);   //error : invalid statement.
             break;
     }
-    cout << setw(numOfBlank * 4) << "" << "A statement finished." << endl;
+    //cout << setw(numOfBlank * 4) << "" << "A statement finished." << endl;
 }
 
 void assignStatement() {
-    cout << "This is an Assign Statement." << endl;
+    //cout << "This is an Assign Statement." << endl;
     identtype it;
     datatype dt;
     int tmpLv;
+    char name[MaxRes + 1];
     //√<赋值语句>::=<标识符> := <表达式> | <标识符>'['<表达式>']':= <表达式>
-    //if (sym == ident) {
-        //it = getIdentType(lsIdent);
-        //dt = getDataType(lsIdent);
-        //tmpLv = getDataLevel(lsIdent);
-        //getSym();
+    if (sym == ident) {
+        strcpy_s(name, lsIdent);
+        it = getIdentType(lsIdent);
+        dt = getDataType(lsIdent);
+        tmpLv = getDataLevel(lsIdent);
+        getSym();
         if (sym == assign) {
             getSym();
-            //if (it == vartype) {
+            if (it == vartype || it == paramtype || it == paramvartype) {
                 expression();
-                assignIt();
-            //}
-            //else if (it == functype) {
+                assignIt(name);
+            }
+            else if (it == functype) {
                 //todo : checkLevel
-                //if (true) {
-                    //assignIt(dt);
-                //}
-                //else {
-                    //error(0, lineNumber);   //error : can't find the function identifier.
-                //}
-            //}
-            //else {
-            //    error(0, lineNumber);   //error : this variable can't be assigned.
-            //}
+                if (true) {
+                    expression();
+                    g_add("$t9", 0, "$v0");
+                }
+                else {
+                    error(40, lineNumber);   //error : can't find the function identifier.
+                }
+            }
+            else {
+                error(39, lineNumber);   //error : this variable can't be assigned.
+            }
         }
         else if (sym == lbracket) {
             getSym();
             expression();
-            int index = (int)expData;
+            g_add("$t9", 0, "$s6");
             //if (expType != inttype) {
             //    error(26, lineNumber);   //error : the expression type should be integer.
             //}
@@ -443,8 +527,7 @@ void assignStatement() {
                 if (sym == assign) {
                     getSym();
                     expression();
-                    //assignIt(dt, index);
-                    assignIt();
+                    assignIt(name);
                 }
                 else {
                     error(9, lineNumber);   //error : an assign symbol is needed.
@@ -457,14 +540,35 @@ void assignStatement() {
         else {
             error(9, lineNumber);   //error : an assign symbol is needed.
         }
-    //}
-    //else {
-    //    error(10, lineNumber);   //error : an identifier is needed.
-    //}
-    cout << setw(--numOfBlank * 4) << "" << "The Assign Statement finished." << endl;
+    }
+    else {
+        error(10, lineNumber);   //error : an identifier is needed.
+    }
+    //cout << setw(--numOfBlank * 4) << "" << "The Assign Statement finished." << endl;
 }
-void assignIt() {
-
+void assignIt(char name[]) {
+    const identifier* tp = getReadTableItem(name);
+    if (tp->identt == vartype || tp->identt == paramtype || tp->identt == paramvartype) {
+        if (tp->datat == inttype || tp->datat == chartype) {
+            g_save(name);
+        }
+        else if (tp->datat == intarrtype || tp->datat == chararrtype) {
+            g_warray(name);
+        }
+    }
+    else if (tp->identt == functype) {
+        if (level == tp->lv + 1) {
+            if (tp->datat == inttype || tp->datat == chartype) {
+                g_save(name);
+            }
+            else {
+                error(0, lineNumber);   //error : invalid function type.
+            }
+        }
+        else {
+            error(42, lineNumber);   //error : can't find the correct function name.
+        }
+    }
 }
 void assignIt(datatype dt) {
     switch (dt) {
@@ -526,86 +630,170 @@ void assignIt(datatype dt, int index) {
 }
 
 void callProcStatement() {
-    cout << "This is a Procedure Call Statement." << endl;
+    //cout << "This is a Procedure Call Statement." << endl;
+    int offset_t;
+    char procname[MaxRes + 1];
     identtype it;
-    //if (sym == ident) {
-        //it = getIdentType(lsIdent);
-        //if (it == proctype) {
-            //getSym();
+    if (sym == ident) {
+        strcpy_s(procname, lsIdent);
+        it = getIdentType(lsIdent);
+        if (it == proctype) {
+            getSym();
             if (sym == lparen) {
                 getSym();
-                if (sym != rparen) {
-                    actualParamList();
-                }
-                if (sym == rparen) {
-                    getSym();
+                //if (sym != rparen) {
+                if (actualParamList(procname)) {
+                    if (sym == rparen) {
+                        offset_t = offset;
+                        g_saveCallReg(procname);
+                        g_jal(procname);
+                        g_unsaveCallReg();
+                        offset = offset_t;
+                        getSym();
+                    }
+                    else {
+                        error(20, lineNumber);   //error : a right parenthsis is needed.
+                    }
                 }
                 else {
-                    error(20, lineNumber);   //error : a right parenthsis is needed.
+                    error(43, lineNumber);  //error : parameter list dispatches.
                 }
             }
             else {
                 error(21, lineNumber);   //error : a left parenthsis is needed.
             }
-    //    }
-    //    else {
-    //        error(0, lineNumber);   //error : the identifier should be a procedure.
-    //    }
-    //}
-    //else {
-    //    error(10, lineNumber);   //error : an identifier is needed.
-    //}
-    cout << setw(--numOfBlank * 4) << "" << "The Procedure Call Statement finished." << endl;
+        }
+        else {
+            error(0, lineNumber);   //error : the identifier should be a procedure.
+        }
+    }
+    else {
+        error(10, lineNumber);   //error : an identifier is needed.
+    }
+    //cout << setw(--numOfBlank * 4) << "" << "The Procedure Call Statement finished." << endl;
 }
 void callFuncStatement() {
-    cout << setw(numOfBlank++ * 4) << "" << "This is a Function Call Statement." << endl;
+    //cout << setw(numOfBlank++ * 4) << "" << "This is a Function Call Statement." << endl;
+    char funcname[MaxRes + 1];
+    int offset_t;
     identtype it;
-    //if (sym == ident) {
+    if (sym == ident) {
+        strcpy_s(funcname, lsIdent);
         it = getIdentType(lsIdent);
-        //if (it == functype) {
-            //getSym();
+        if (it == functype) {
+            getSym();
             if (sym == lparen) {
                 getSym();
-                if (sym != rparen) {
-                    actualParamList();
-                }
-                if (sym == rparen) {
-                    getSym();
+                //if (sym != rparen) {
+                if (actualParamList(funcname)) {
+                    if (sym == rparen) {
+                        offset_t = offset;
+                        g_saveCallReg(funcname);
+                        g_jal(funcname);
+                        g_add("$v0", 0, "$t7");
+                        g_unsaveCallReg();
+                        offset = offset_t;
+                        getSym();
+                    }
+                    else {
+                        error(20, lineNumber);   //error : a right parenthsis is needed.
+                    }
                 }
                 else {
-                    error(20, lineNumber);   //error : a right parenthsis is needed.
+                    error(43, lineNumber);  //error : parameter list dispatches.
                 }
             }
             else {
                 error(21, lineNumber);   //error : a left parenthsis is needed.
             }
-        //}
-        //else {
-        //    error(28, lineNumber);   //error : the identifier should be a procedure.
-        //}
-    //}
-    //else {
-    //    error(10, lineNumber);   //error : an identifier is needed.
-    //}
-        cout << setw(--numOfBlank * 4) << "" << "The Function Call Statement finished." << endl;
-}
-void actualParamList() {
-    cout << setw(numOfBlank++ * 4) << "" << "Actual Param List started." << endl;
-    expression();
-    while (sym == comma) {
-        getSym();
-        expression();
+        }
+        else {
+            error(28, lineNumber);   //error : the identifier should be a procedure.
+        }
     }
-    cout << setw(--numOfBlank * 4) << "" << "Actual Param List finished." << endl;
+    else {
+        error(10, lineNumber);   //error : an identifier is needed.
+    }
+        //cout << setw(--numOfBlank * 4) << "" << "The Function Call Statement finished." << endl;
+}
+bool actualParamList(char name[]) {
+    //cout << setw(numOfBlank++ * 4) << "" << "Actual Param List started." << endl;
+    identifier* tp = getTableItem(name);
+    int paramNum = tp->length;
+    if (paramNum == 0)
+        return true;
+    int funcLevel = tp->lv;
+    expData* expdata;
+    //todo : 
+    paramNum--;
+    expdata = expression();
+    if (expdata == null) {
+        g_resetParamCounter();
+        return false;
+    }
+    tp = tp->next;
+    g_saveParam(funcLevel, tp->identt, *expdata);
+    while (sym == comma) {
+        paramNum--;
+        if (paramNum < 0) {
+            error(43, lineNumber);  //error : parameter list dispatches.
+            break;
+        }
+        getSym();
+        expdata = expression();
+        if (expdata == null) {
+            g_resetParamCounter();
+            return false;
+        }
+        tp = tp->next;
+        g_saveParam(funcLevel, tp->identt, *expdata);
+    }
+    if (paramNum > 0) {
+        error(43, lineNumber);  //error : parameter list dispatches.
+    }
+    //cout << setw(--numOfBlank * 4) << "" << "Actual Param List finished." << endl;
+    g_resetParamCounter();
+    return true;
 }
 
 void ifStatement() {
-    cout << "This is a Condition Statement." << endl;
+    //cout << "This is a Condition Statement." << endl;
+    indexOfLabel++;
+    symbol op;
+    char elseLabel[16];
+    char endifLabel[16];
+    sprintf_s(elseLabel, "elseLabel%d", indexOfLabel);
+    sprintf_s(endifLabel, "endifLabel%d", indexOfLabel);
     getSym();
-    condition();
+    op = condition();
+    switch (op) {
+        case eql:
+            g_cmp("neq", elseLabel);
+            break;
+        case neq:
+            g_cmp("eql", elseLabel);
+            break;
+        case lss:
+            g_cmp("geq", elseLabel);
+            break;
+        case leq:
+            g_cmp("gtr", elseLabel);
+            break;
+        case gtr:
+            g_cmp("leq", elseLabel);
+            break;
+        case geq:
+            g_cmp("lss", elseLabel);
+            break;
+        default:
+            error(30, lineNumber);   //error : invalid relational operator.
+            break;
+    }
     if (sym == thensym) {
         getSym();
         statement();
+        g_j(endifLabel);
+        g_label(elseLabel);
         if (sym == elsesym) {
             getSym();
             statement();
@@ -614,65 +802,94 @@ void ifStatement() {
     else {
         error(29, lineNumber);   // error : "then" is needed.
     }
-    cout << setw(--numOfBlank * 4) << "" << "The Condition Statement finished." << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "The Condition Statement finished." << endl;
+    g_label(endifLabel);
 }
 
-void condition() {
-    cout << setw(numOfBlank++ * 4) << "" << "Condition started." << endl;
+symbol condition() {
+    //cout << setw(numOfBlank++ * 4) << "" << "Condition started." << endl;
     expression();
-    switch (sym) {
+    symbol op;
+    g_add("$t9", 0, "$s0");
+    op = sym;
+    getSym();
+    expression();
+    g_add("$t9", 0, "$s1");
+    //cout << setw(--numOfBlank * 4) << "" << "Condition finished." << endl;
+    return op;
+}
+
+void whileStatement() {
+    //cout << "This is a While Statement." << endl;
+    indexOfLabel++;
+    getSym();
+    char whileLabel[16];
+    char endWhileLabel[20];
+    sprintf_s(whileLabel, "whileLabel%d", indexOfLabel);
+    sprintf_s(endWhileLabel, "endWhileLabel%d", indexOfLabel);
+
+    g_label(whileLabel);
+    symbol op = condition();
+    switch (op) {
         case eql:
+            g_cmp("neq", endWhileLabel);
             break;
         case neq:
+            g_cmp("eql", endWhileLabel);
             break;
         case lss:
+            g_cmp("geq", endWhileLabel);
             break;
         case leq:
+            g_cmp("gtr", endWhileLabel);
             break;
         case gtr:
+            g_cmp("leq", endWhileLabel);
             break;
         case geq:
+            g_cmp("lss", endWhileLabel);
             break;
         default:
             error(30, lineNumber);   //error : invalid relational operator.
             break;
     }
-    getSym();
-    expression();
-    //todo : 
-    cout << setw(--numOfBlank * 4) << "" << "Condition finished." << endl;
-}
-
-void whileStatement() {
-    cout << "This is a While Statement." << endl;
-    getSym();
-    condition();
     if (sym == dosym) {
         getSym();
     }
     else {
         error(31, lineNumber);   // error : "do" is needed.
     }
+    g_saveConditionReg();
     statement();
-    cout << setw(--numOfBlank * 4) << "" << "The While Statement finished." << endl;
+    g_unsaveConditionReg();
+    g_j(whileLabel);
+    g_label(endWhileLabel);
+    //cout << setw(--numOfBlank * 4) << "" << "The While Statement finished." << endl;
 }
 
 void forStatement() {
-    cout << "This is a For Statement." << endl;
+    //cout << "This is a For Statement." << endl;
+    char name[MaxRes + 1];
+    indexOfLabel++;
+    char forLabel[16];
+    char endforLabel[20];
+    sprintf_s(forLabel, "forLabel%d", indexOfLabel);
+    sprintf_s(endforLabel, "endforLabel%d", indexOfLabel);
     getSym();
     bool negative = false;
-    int f, t, b;
+    int b;
     if (sym == ident) {
         sprintf_s(name, MaxRes, "%s", lsIdent);
         getSym();
         if (sym == assign) {
             getSym();
             expression();
-            f = expData;
+            g_add("$t9", 0, "$s0");
             if (sym == tosym) {
                 getSym();
                 expression();
-                t = expData;
+                g_add("$t9", 0, "$s1");
+                g_label(forLabel);
                 switch (sym) {
                     case minussym:
                         negative = true;
@@ -682,24 +899,47 @@ void forStatement() {
                 }
                 if (sym == bysym) {
                     getSym();
-                    if (sym == num) {
-                        if (negative) {
-                            b = 0 - lsNum;
-                        }
-                        else {
-                            b = lsNum;
+                    negative = false;
+                    if (sym == minussym || sym == plussym) {
+                        if (sym == minussym) {
+                            negative = true;
                         }
                         getSym();
-                        if (sym == dosym) {
+                    }
+                    if (sym == num) {
+                        if (lsNum != 0) {
+                            if (negative) {
+                                b = 0 - lsNum;
+                            }
+                            else {
+                                b = lsNum;
+                            }
                             getSym();
-                            statement();
+                            if (sym == dosym) {
+                                if (b < 0) {
+                                    g_cmp("lss", endforLabel);
+                                }
+                                else {
+                                    g_cmp("gtr", endforLabel);
+                                }
+                                getSym();
+                                g_saveForReg(name);
+                                statement();
+                                g_unsaveForReg(name);
+                                g_add("$s0", b, "$s0");
+                                g_j(forLabel);
+                                g_label(endforLabel);
+                            }
+                            else {
+                                error(31, lineNumber);   // error : "do" is needed.
+                            }
                         }
                         else {
-                            error(31, lineNumber);   // error : "do" is needed.
+                            error(36, lineNumber);  //error : step can't be zero.
                         }
                     }
                     else {
-                        error(11, lineNumber);   //error : a number or a char is needed.
+                        error(11, lineNumber);   //error : a number or a char is needed in For Statement.
                     }
                 }
                 else {
@@ -711,19 +951,19 @@ void forStatement() {
             }
         }
         else {
-            error(9, lineNumber);   //error : an assign symbol is needed.
+            error(9, lineNumber);   //error : an assign symbol is needed in For Statement.
         }
     }
     else {
         error(10, lineNumber);   //error : an identifier is needed.
     }
-    cout << setw(--numOfBlank * 4) << "" << "The For Statement finished." << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "The For Statement finished." << endl;
 }
 
 void complexStatement() {
-    cout << setw(numOfBlank++ * 4) << "" << "This is a Complex Statement." << endl;
+    //cout << setw(numOfBlank++ * 4) << "" << "This is a Complex Statement." << endl;
+    complexLevel++;
     if (sym == beginsym) {
-        complexLevel++;
         getSym();
         statement();
         while (sym == semicolon) {
@@ -731,7 +971,6 @@ void complexStatement() {
             statement();
         }
         if (sym == endsym) {
-            //todo : 
             complexLevel--;
             getSym();
         }
@@ -741,23 +980,26 @@ void complexStatement() {
     }
     else {
         error(35, lineNumber);   //error : "begin" is needed.
+        complexLevel--;
     }
-    cout << setw(--numOfBlank * 4) << "" << "The Complex Statement finished." << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "The Complex Statement finished." << endl;
 }
 
 void readStatement() {
-    cout << "This is a Read Statement." << endl;
+    //cout << "This is a Read Statement." << endl;
+    char name[MaxRes + 1];
     getSym();
     if (sym == lparen) {
         getSym();
         if (sym == ident) {
             sprintf_s(name, MaxRes, "%s", lsIdent);
-            
+            g_read(name);
             getSym();
             while (sym == comma) {
                 getSym();
                 if (sym == ident) {
                     sprintf_s(name, MaxRes, "%s", lsIdent);
+                    g_read(name);
                     getSym();
                 }
                 else {
@@ -778,89 +1020,120 @@ void readStatement() {
     else {
         error(21, lineNumber);   //error : a left parenthsis is needed.
     }
-    cout << setw(--numOfBlank * 4) << "" << "The Read Statement finished." << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "The Read Statement finished." << endl;
 }
 
 void writeStatement() {
-    cout << "This is a Write Statement." << endl;
+    //cout << "This is a Write Statement." << endl;
     getSym();
+    expData* expdata;
     if (sym == lparen) {
         getSym();
         if (sym == str) {
+            g_writeStr(lsStr);
             getSym();
             if (sym == comma) {
                 getSym();
-                expression();
+                expdata = expression();
+                if (expdata != null) {
+                    if (expdata->type == expNum || expdata->type == expFormula) {
+                        g_write(inttype);
+                    }
+                    else {
+                        g_write(expdata->name);
+                    }
+                }
+                else {
+                    error(44, lineNumber);  // error : invalid expression
+                }
             }
             if(sym == rparen) {
                 getSym();
             }
             else {
-                error(20, lineNumber);   //error : a right parenthsis is needed.
+                error(47, lineNumber);   //error : a right parenthsis is needed.
             }
         }
         else {
-            expression();
+            expdata = expression();
+            if (expdata != null) {
+                if (expdata->type == expNum || expdata->type == expFormula) {
+                    g_write(inttype);
+                }
+                else {
+                    g_write(expdata->name);
+                }
+            }
+            else {
+                error(44, lineNumber);  //error : a right parenthsis is needed.
+            }
             if (sym == rparen) {
                 getSym();
             }
             else {
-                error(20, lineNumber);   //error : a right parenthsis is needed.
+                error(20, lineNumber);  //error : a right parenthsis is needed.
             }
         }
     }
     else {
         error(21, lineNumber);   //error : a left parenthsis is needed.
     }
-    cout << setw(--numOfBlank * 4) << "" << "The Write Statement finished." << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "The Write Statement finished." << endl;
 }
 
-void expression() {
-    cout << setw(numOfBlank++ * 4) << "" << "Expression started." << endl;
+expData* expression() {
+    // save data into $t9. $t9 = $t9 + $t8.
+    expData* data = new expData();
+    //cout << setw(numOfBlank++ * 4) << "" << "Expression started." << endl;
     bool negative = false;
-    int t;
     switch (sym) {
         case minussym:
             negative = true;
+            
         case plussym:
             getSym();
             break;
     }
-    t = term();
+    data = term();
     if (negative) {
-        expData = 0 - t;
+        g_sub("$0", "$t8", "$t9");
+        data->type = expFormula;
     }
     else {
-        expData = t;
+        g_add("$t8", "$0", "$t9");
     }
     while (sym == plussym || sym == minussym) {
+        data->type = expFormula;
         switch (sym) {
             case minussym:
                 negative = true;
-                getSym();
                 break;
             case plussym:
                 negative = false;
-                getSym();
                 break;
         }
-        t = term();
+        getSym();
+        term();
         if (negative) {
-            expData -= t;
+            g_sub("$t9", "$t8", "$t9");
         }
         else {
-            expData += t;
+            g_add("$t9", "$t8", "$t9");
         }
     }
-    cout << setw(--numOfBlank * 4) << "" << "Expression finished." << endl;
+    //cout << setw(--numOfBlank * 4) << "" << "Expression finished." << endl;
+    return data;
 }
 
-int term() {
-    cout << setw(numOfBlank++ * 4) << "" << "Term started." << endl;
-    int term, t;
+expData* term() {
+    //save data into $t8. $t8 = $t8 + $t7.
+    expData* data = new expData();
+    //cout << setw(numOfBlank++ * 4) << "" << "Term started." << endl;
     bool times;
-    term = factor();
+    data = factor();
+    g_add("$t7", "$0", "$t8");
     while (sym == timessym || sym == slashsym) {
+        data->type = expFormula;
         switch (sym) {
             case timessym:
                 times = true;
@@ -870,29 +1143,39 @@ int term() {
                 break;
         }
         getSym();
-        t = factor();
+        factor();
         if (times) {
-            term *= t;
+            g_gen("mul", "$t8", "$t7", "$t8");
         }
         else {
-            term /= t;
+            g_gen("div", "$t8", "$t7", "$t8");
         }
     }
-    cout << setw(--numOfBlank * 4) << "" << "Term finished." << endl;
-    return term;
+    //cout << setw(--numOfBlank * 4) << "" << "Term finished." << endl;
+    return data;
 }
 
-int factor() {
-    cout << setw(numOfBlank++ * 4) << "" << "Factor started." << endl;
-    int factor = -1;
+expData* factor() {
+    //save data into $t7.
+    //变量或常量/数组项/数字/函数调用/算式
+    //全部char->char型
+    //出现int->int型
+    char name[MaxRes + 1];
+    expData* data = new expData();
+    //cout << setw(numOfBlank++ * 4) << "" << "Factor started." << endl;
+    //int factor = -1;
     if (sym == num) {
-        factor = lsNum;
+        data->type = expNum;
+        g_add("$0", lsNum, "$t7");
         getSym();
     }
     else if(sym == lparen) {
         getSym();
-        expression();
-        factor = expData;
+        g_saveExpReg();
+        data = expression();
+        //first save the result($t9) into $t7, then recover $t8 $t9
+        g_add("$t9", "$0", "$t7");
+        g_unsaveExpReg();
         if (sym == rparen) {
             getSym();
         }
@@ -901,41 +1184,59 @@ int factor() {
         }
     }
     else if (sym == ident) {
-        //char name[MaxRes + 1];
         sprintf_s(name, MaxRes, "%s", lsIdent);
-        getSym();
-        if (sym == lparen) {
+        const identifier *tp = getReadTableItem(name);
+        strcpy_s(data->name, name);
+        if (tp->identt == functype) {
+            data->type = expFunc;
+            g_saveExpReg();
             callFuncStatement();
-            factor = -1;
+            g_unsaveExpReg();
         }
-        else if (sym == lbracket) {
+        else if (tp->identt == vartype && (tp->datat == intarrtype || tp->datat == chararrtype)) {
+            data->type = expArray;
             getSym();
-            expression();
-            factor = expData;
-            if (sym == rbracket) {
+            if (sym == lbracket) {
                 getSym();
+                g_saveExpReg();
+                expression();
+                g_add("$t9", "$0", "$s7");
+                g_rarray(name);   //$t7 = name[$t9]
+                g_unsaveExpReg();
+                if (sym == rbracket) {
+                    getSym();
+                }
+                else {
+                    error(15, lineNumber);   //error : a right bracket is needed.
+                }
             }
             else {
-                error(15, lineNumber);   //error : a right bracket is needed.
+                error(17, lineNumber);   //error : a left bracket is needed.
             }
-            //if (sym == num) {
-            //    factor = -1;     //todo : 
-            //    getSym();
-            //    if (sym == rbracket) {
-            //        getSym();
-            //    }
-            //    else {
-            //        error(15, lineNumber);   //error : a right bracket is needed.
-            //    }
-            //}
-            //else {
-            //    error(11, lineNumber);   //error : a number or a char is needed.
-            //}
+        }
+        else if (tp->identt == consttype
+                || (tp->identt == vartype || tp->identt == paramtype || tp->identt == paramvartype) 
+                    && (tp->datat == inttype || tp->datat == chartype)) {
+            if (tp->identt == consttype) {
+                data->type = expConst;
+            }
+            else if (tp->identt == paramvartype) {
+                data->type = expParamVar;
+            }
+            else {
+                data->type = expVar;
+            }
+            g_load(name);
+            getSym();
         }
         else {
-            factor = -1;     //todo:
+            error(41, lineNumber);  //can't find this identifier.
         }
     }
-    cout << setw(--numOfBlank * 4) << "" << "Factor finished." << endl;
-    return factor;
+    else {
+        data = NULL;
+        error(44, lineNumber);  // error : invalid expression.
+    }
+    //cout << setw(--numOfBlank * 4) << "" << "Factor finished." << endl;
+    return data;
 }
