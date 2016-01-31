@@ -1,5 +1,6 @@
 //TableMgr.cpp
 #include "definitions.h"
+#include "Err.h"
 #include "TableMgr.h"
 //operations of word table:
 

@@ -36,9 +36,6 @@
     <ClCompile Include="TableMgr.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Interpreter.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="definitions.h">
@@ -53,7 +50,7 @@
     <ClInclude Include="TableMgr.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Interpreter.h">
+    <ClInclude Include="Err.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

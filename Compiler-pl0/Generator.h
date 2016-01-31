@@ -1,5 +1,5 @@
 //Generator.h
-#include "definitions.h"
+//#include "definitions.h"
 
 void g_gen(char cmd[], char op1[], char op2[], char op3[]);
 
@@ -33,3 +33,5 @@ void g_read(char op1[]);
 void g_write(datatype dt);
 void g_write(char name[]);
 void g_writeStr(char str[]);
+
+void g_generate();

@@ -1,7 +1,7 @@
 //Compiler-pl0.cpp
 #include <iostream>
 #include "definitions.h"
-#include "Interpreter.h"
+#include "Generator.h"
 #include "TableMgr.h"
 
 //using namespace std;
@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     }
     initLexer();    //Initialize Lexer and other things.
     startParser();  //Start parsing.
-    interpret();    //Interpret Mcode to MIPS code.
+    g_generate();    //Interpret Mcode to MIPS code.
     //printMcode();
     //printWordTable();
     return 0;

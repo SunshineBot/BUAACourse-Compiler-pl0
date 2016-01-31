@@ -1,5 +1,4 @@
 //Parser.h
-#include "definitions.h"
 extern int getSym();
 extern void error(int, int);
 
@@ -42,6 +41,6 @@ expData* factor();
 
 
 void assignIt(char name[]);
-void assignIt(char name[], int index);
-void assignIt(datatype dt);
-void assignIt(datatype dt, int index);
+//void assignIt(char name[], int index);
+//void assignIt(datatype dt);
+//void assignIt(datatype dt, int index);

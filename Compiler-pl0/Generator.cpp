@@ -1,7 +1,10 @@
 //Generator.cpp
-#include "Generator.h"
-//#include "definitions.h"
+#include <iostream>
+#include <iomanip>
+#include "definitions.h"
 #include "TableMgr.h"
+#include "Err.h"
+#include "Generator.h"
 
 int paramCounter = 0;
 
@@ -49,6 +52,10 @@ void g_label(char label[], int indexOfLabel) {
 }
 void g_save(char name[], char srcReg[]) {
     const identifier* tp = getReadTableItem(name);
+    if (tp == null) {
+        error(49, lineNumber);  //error : identifier undefined.
+        return;
+    }
     if (tp->identt != paramvartype) {
         if (level == tp->lv) {
             pc->next = new Mcode();
@@ -102,6 +109,10 @@ void g_save(char name[]) {
 }
 void g_load(char name[], char targetReg[]) {
     const identifier* tp = getReadTableItem(name);
+    if (tp == null) {
+        error(49, lineNumber);  //error : identifier undefined.
+        return;
+    }
     if (tp->identt != paramvartype) {
         if (level == tp->lv) {
             pc->next = new Mcode();
@@ -184,6 +195,10 @@ void g_load(char name[]) {
 }
 void g_save_const(char name[]) {
     const identifier* tp = getReadTableItem(name);
+    if (tp == null) {
+        error(49, lineNumber);  //error : identifier undefined.
+        return;
+    }
     int data;
     switch (tp->datat) {
         case chartype:
@@ -283,6 +298,10 @@ void g_unsaveConditionReg() {
 }
 void g_saveForReg(char name[]) {
     const identifier* tp = getReadTableItem(name);
+    if (tp == null) {
+        error(49, lineNumber);  //error : identifier undefined.
+        return;
+    }
     pc->next = new Mcode();
     pc = pc->next;
     pc->next = null;
@@ -302,6 +321,10 @@ void g_saveForReg(char name[]) {
 }
 void g_unsaveForReg(char name[]) {
     const identifier* tp = getReadTableItem(name);
+    if (tp == null) {
+        error(49, lineNumber);  //error : identifier undefined.
+        return;
+    }
     pc->next = new Mcode();
     pc = pc->next;
     pc->next = null;
@@ -361,8 +384,11 @@ void g_saveFP(int fp_offset) {
     offset+=4;
 }
 void g_saveCallReg(char name[]) {
-    const identifier* tp;
-    tp = getReadTableItem(name);
+    const identifier* tp = getReadTableItem(name);
+    if (tp == null) {
+        error(49, lineNumber);  //error : identifier undefined.
+        return;
+    }
     //int lv = tp->lv;
     //$fp-Reg
     int fp_offset = offset;
@@ -416,6 +442,10 @@ void g_unsaveCallReg() {
 void g_saveParam(int funcLevel, identtype it, expData data) {
     //paramCounter++;
     const identifier* tp = getReadTableItem(data.name);
+    if (!(data.type == expNum || data.type == expFormula) && tp == null) {
+        error(49, lineNumber);  //error : identifier undefined.
+        return;
+    }
     if (it == paramvartype) {
         if (data.type == expParamVar) {
             if (level == tp->lv) {      //本层变量作为传址参数
@@ -479,9 +509,9 @@ void g_saveParam(int funcLevel, identtype it, expData data) {
     sprintf_s(pc->cmd, "save");
     sprintf_s(pc->op1, "$t9");
     sprintf_s(pc->op2, "$sp");
-    sprintf_s(pc->op3, "-%d", offset + 56 + (funcLevel + 1 + paramCounter) * 4);
-    //offset += 4;
-    paramCounter++;
+    sprintf_s(pc->op3, "-%d", offset);
+    offset += 4;
+    //paramCounter++;
 }
 void g_resetParamCounter() {
     paramCounter = 0;
@@ -528,6 +558,10 @@ void g_sub(char op1[], int op2, char op3[]) {
 void g_rarray(char name[]) {
     //$op3 = $op1[$op2]
     const identifier* tp = getReadTableItem(name);
+    if (tp == null) {
+        error(49, lineNumber);  //error : identifier undefined.
+        return;
+    }
     
     g_add("$0", 4, "$t3");
     g_gen("mul", "$s7", "$t3", "$s7");  //数组内偏移量-$s7
@@ -557,6 +591,10 @@ void g_rarray(char name[]) {
 
 void g_warray(char name[]) {
     const identifier* tp = getReadTableItem(name);
+    if (tp == null) {
+        error(49, lineNumber);  //error : identifier undefined.
+        return;
+    }
     g_add("$0", 4, "$t3");
     g_gen("mul", "$s6", "$t3", "$s6");
     g_add("$s6", tp->offset, "$s6");    //实际偏移量 = 首地址偏移量 + 下标 * 元素长度（4）
@@ -604,6 +642,10 @@ void g_j(char label[]) {
 }
 void g_jal(char label[]) {
     const identifier* tp = getReadTableItem(label);
+    if (tp == null) {
+        error(49, lineNumber);  //error : identifier undefined.
+        return;
+    }
     pc->next = new Mcode();
     pc = pc->next;
     pc->next = null;
@@ -625,6 +667,10 @@ void g_jr() {
 
 void g_read(char name[]) {
     const identifier* tp = getReadTableItem(name);
+    if (tp == null) {
+        error(49, lineNumber);  //error : identifier undefined.
+        return;
+    }
     if (tp->datat == inttype) {
         g_add("$0", 5, "$v0");
         g_gen("syscall", "", "", "");
@@ -648,6 +694,10 @@ void g_write(datatype dt) {
 }
 void g_write(char name[]) {
     const identifier* tp = getReadTableItem(name);
+    if (tp == null) {
+        error(49, lineNumber);  //error : identifier undefined.
+        return;
+    }
     if (tp->datat == inttype ||tp->datat == intarrtype) {
         g_write(inttype);
     }
@@ -663,4 +713,97 @@ void g_writeStr(char str[]) {
         g_add("$0", c, "$a0");
         g_gen("syscall", "", "", "");
     }
+}
+
+void g_generate() {
+    if (errorAmount > 0) {
+        cout << "Amount of Error is " << errorAmount << endl;
+        return;
+    }
+
+    //ostream& fp = cout;
+    ofstream fp;
+    fp.open("result.txt");
+    Mcode* pc;
+    fp << left;
+    fp << setw(10) << "add" << "$fp, $sp, $0" << endl;
+    for (pc = McodeHead->next; pc != null; pc = pc->next) {
+        if (!strcmp(pc->cmd, "label")) {
+            fp << pc->op1 << endl;
+        }
+        else if (!strcmp(pc->cmd, "save")) {
+            fp << setw(10) << "sw"
+                << pc->op1 << ", "
+                << pc->op3 << "("
+                << pc->op2 << ")" << endl;
+        }
+        else if (!strcmp(pc->cmd, "load")) {
+            fp << setw(10) << "lw"
+                << pc->op1 << ", "
+                << pc->op3 << "("
+                << pc->op2 << ")" << endl;
+        }
+        else if (!strcmp(pc->cmd, "add")
+            || !strcmp(pc->cmd, "addi")
+            || !strcmp(pc->cmd, "sub")
+            || !strcmp(pc->cmd, "subi")
+            || !strcmp(pc->cmd, "mul")
+            || !strcmp(pc->cmd, "div")
+            ) {
+            fp << setw(10) << pc->cmd
+                << pc->op3 << ", "
+                << pc->op1 << ", "
+                << pc->op2 << endl;
+        }
+        else if (!strcmp(pc->cmd, "neq")) {
+            fp << setw(10) << "bne"
+                << pc->op1 << ", "
+                << pc->op2 << ", "
+                << pc->op3 << endl;
+        }
+        else if (!strcmp(pc->cmd, "eql")) {
+            fp << setw(10) << "beq"
+                << pc->op1 << ", "
+                << pc->op2 << ", "
+                << pc->op3 << endl;
+        }
+        else if (!strcmp(pc->cmd, "geq")) {
+            fp << setw(10) << "sub"
+                << "$t4, $s0, $s1" << endl;
+            fp << setw(10) << "bgez"
+                << "$t4, "
+                << pc->op3 << endl;
+        }
+        else if (!strcmp(pc->cmd, "gtr")) {
+            fp << setw(10) << "sub"
+                << "$t4, $s0, $s1" << endl;
+            fp << setw(10) << "bgtz"
+                << "$t4, "
+                << pc->op3 << endl;
+        }
+        else if (!strcmp(pc->cmd, "leq")) {
+            fp << setw(10) << "sub"
+                << "$t4, $s0, $s1" << endl;
+            fp << setw(10) << "blez"
+                << "$t4, "
+                << pc->op3 << endl;
+        }
+        else if (!strcmp(pc->cmd, "lss")) {
+            fp << setw(10) << "sub"
+                << "$t4, $s0, $s1" << endl;
+            fp << setw(10) << "bltz"
+                << "$t4, "
+                << pc->op3 << endl;
+        }
+        else if (!strcmp(pc->cmd, "j")
+            || !strcmp(pc->cmd, "jal")
+            || !strcmp(pc->cmd, "jr")) {
+            fp << setw(10) << pc->cmd
+                << pc->op1 << endl;
+        }
+        else if (!strcmp(pc->cmd, "syscall")) {
+            fp << setw(10) << pc->cmd << endl;
+        }
+    }
+    fp.close();
 }

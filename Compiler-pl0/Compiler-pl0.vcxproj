@@ -86,15 +86,14 @@
     <ClCompile Include="definitions.cpp" />
     <ClCompile Include="Err.cpp" />
     <ClCompile Include="Generator.cpp" />
-    <ClCompile Include="Interpreter.cpp" />
     <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="TableMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="definitions.h" />
+    <ClInclude Include="Err.h" />
     <ClInclude Include="Generator.h" />
-    <ClInclude Include="Interpreter.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="TableMgr.h" />
   </ItemGroup>

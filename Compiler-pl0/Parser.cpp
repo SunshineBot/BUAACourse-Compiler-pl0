@@ -2,9 +2,10 @@
 #include <iomanip>
 #include <iostream>
 #include "definitions.h"
-#include "Parser.h"
 #include "Generator.h"
 #include "TableMgr.h"
+#include "Err.h"
+#include "Parser.h"
 using namespace std;
 
 //最右端是终结符号的子程序需要getSym();
@@ -68,7 +69,9 @@ void constDeclaration() {
     if (sym != semicolon) {
         error(7, lineNumber);   //error : a semicolon is needed.
     }
-    getSym();
+    else {
+        getSym();
+    }
     //cout << setw(--numOfBlank * 4) << "" << "Const Declaration finished." << endl << endl;
 }
 void constDefinition() {
@@ -86,11 +89,11 @@ void constDefinition() {
             g_save_const(name);
         }
         else {
-            error(9, lineNumber);   //error : an assign symbol is needed.
+            error(9, lineNumber, errconstDef);   //error : an assign symbol is needed.
         }
     }
     else {
-        error(10, lineNumber);   //error : an identifier is needed.
+        error(10, lineNumber, errconstDef);   //error : an identifier is needed.
     }
     //cout << setw(--numOfBlank * 4) << "" << "Const Definition finished." << endl;
 }
@@ -122,7 +125,7 @@ int constData(datatype* tp) {
         }
     }
     else {
-        error(11, lineNumber);   //error : a number or a char is needed.
+        error(11, lineNumber, errconstDef);   //error : a number or a char is needed.
     }
     getSym();
     //cout << setw(numOfBlank * 4) << "" << "This is data of const type." << endl;
@@ -137,7 +140,7 @@ void varDeclaration() {
     getSym();
     varDefinition();
     if (sym != semicolon) {
-        error(7, lineNumber);   //error : a semicolon is needed.
+        error(7, lineNumber, errvar);   //error : a semicolon is needed.
     }
     getSym();
     while (sym == ident) {
@@ -166,7 +169,7 @@ void varDefinition() {
                 getSym();
             }
             else {
-                error(10, lineNumber);   //error : an identifier is needed.
+                error(10, lineNumber, errvar);   //error : an identifier is needed.
             }
         }
         if (sym == colon) {
@@ -174,7 +177,7 @@ void varDefinition() {
             datatype dt = type(start);
         }
         else {
-            error(13, lineNumber);   //error : a colon is needed.
+            error(13, lineNumber, errvar);   //error : a colon is needed.
         }
     }
     //cout << setw(--numOfBlank * 4) << "" << "Variable Definition finished." << endl;
@@ -183,8 +186,8 @@ void varDefinition() {
 }
 
 datatype type(char start[]) {
-    datatype dt;
-    int length;
+    datatype dt = nul;
+    int length = 0;
     if (sym == intsym || sym == charsym) {
         dt = baseType();
         setDataType(start, dt);
@@ -213,23 +216,23 @@ datatype type(char start[]) {
                         setDataType(start, dt, length);
                     }
                     else {
-                        error(14, lineNumber);   //error : the word "of" is needed.
+                        error(14, lineNumber, errvar);   //error : the word "of" is needed.
                     }
                 }
                 else {
-                    error(15, lineNumber);   //error : a right bracket is needed.
+                    error(15, lineNumber, errvar);   //error : a right bracket is needed.
                 }
             }
             else {
-                error(16, lineNumber);   //error : a integer variable is needed.
+                error(16, lineNumber, errvar);   //error : a integer variable is needed.
             }
         }
         else {
-            error(17, lineNumber);   //error : a left bracket is needed.
+            error(17, lineNumber, errvar);   //error : a left bracket is needed.
         }
     }
     else {
-        error(18, lineNumber);   //error : type name is needed.
+        error(18, lineNumber, errvar);   //error : unknown variable type.
     }
     //cout << setw(numOfBlank * 4) << "" << "a type reserved word." << endl;
     return dt;
@@ -296,15 +299,15 @@ void procedureHead() {
                     }
                 }
                 else {
-                    error(20, lineNumber);   //error : a right parenthsis is needed.
+                    error(20, lineNumber, errproc);   //error : a right parenthsis is needed.
                 }
             }
             else {
-                error(21, lineNumber);   //error : a left parenthsis is needed.
+                error(21, lineNumber, errproc);   //error : a left parenthsis is needed.
             }
         }
         else {
-            error(10, lineNumber);   //error : an identifier is needed.
+            error(10, lineNumber, errproc);   //error : an identifier is needed.
         }
     }
     else {
@@ -362,19 +365,19 @@ void functionHead() {
                         }
                     }
                     else {
-                        error(13, lineNumber);   //error : a colon is needed.
+                        error(13, lineNumber, errfunc);   //error : a colon is needed.
                     }
                 }
                 else {
-                    error(20, lineNumber);   //error : a right parenthsis is needed.
+                    error(20, lineNumber, errfunc);   //error : a right parenthsis is needed.
                 }
             }
             else {
-                error(21, lineNumber);   //error : a left parenthsis is needed.
+                error(21, lineNumber, errfunc);   //error : a left parenthsis is needed.
             }
         }
         else {
-            error(10, lineNumber);   //error : an identifier is needed.
+            error(10, lineNumber, errfunc);   //error : an identifier is needed.
         }
     }
     else {
@@ -417,7 +420,7 @@ int paramList() {
                 getSym();
             }
             else {
-                error(10, lineNumber);   //error : an identifier is needed.
+                error(10, lineNumber, errparam);   //error : an identifier is needed.
             }
         }
         if (sym == colon) {
@@ -430,11 +433,11 @@ int paramList() {
             }
         }
         else {
-            error(13, lineNumber);   //error : a colon is needed.
+            error(13, lineNumber, errparam);   //error : a colon is needed.
         }
     }
     else {
-        error(10, lineNumber);   //error : an identifier is needed.
+        error(10, lineNumber, errparam);   //error : an identifier is needed.
     }
     //cout << setw(--numOfBlank * 4) << "" << "Parameter List finished." << endl;
     return paramCounter;
@@ -451,6 +454,9 @@ void statement() {
             }
             else if(t == proctype) {
                 callProcStatement();
+            }
+            else if (t == consttype) {
+                error(48, lineNumber, errassign);   // error : const data can't be assigned.
             }
             else {
                 error(24, lineNumber);
@@ -512,7 +518,7 @@ void assignStatement() {
                 }
             }
             else {
-                error(39, lineNumber);   //error : this variable can't be assigned.
+                error(39, lineNumber, errassign);   //error : this variable can't be assigned.
             }
         }
         else if (sym == lbracket) {
@@ -530,19 +536,19 @@ void assignStatement() {
                     assignIt(name);
                 }
                 else {
-                    error(9, lineNumber);   //error : an assign symbol is needed.
+                    error(9, lineNumber, errassign);   //error : an assign symbol is needed.
                 }
             }
             else {
-                error(15, lineNumber);   //error : a right bracket is needed.
+                error(15, lineNumber, errassign);   //error : a right bracket is needed.
             }
         }
         else {
-            error(9, lineNumber);   //error : an assign symbol is needed.
+            error(9, lineNumber, errassign);   //error : an assign symbol is needed.
         }
     }
     else {
-        error(10, lineNumber);   //error : an identifier is needed.
+        error(10, lineNumber, errassign);   //error : an identifier is needed.
     }
     //cout << setw(--numOfBlank * 4) << "" << "The Assign Statement finished." << endl;
 }
@@ -570,70 +576,71 @@ void assignIt(char name[]) {
         }
     }
 }
-void assignIt(datatype dt) {
-    switch (dt) {
-        case nul:
-            error(27, lineNumber);   //type check failed.
-            break;
-        case chartype:
-            if (sym == chr) {
-                setData(lsIdent, lsChar);
-            }
-            else {
-                error(27, lineNumber);   //type check failed.
-            }
-            break;
-        case inttype:
-            if (sym == num) {
-                setData(lsIdent, lsNum);
-            }
-            else if (sym == chr) {
-                setData(lsIdent, (int)lsChar);
-            }
-            else {
-                error(27, lineNumber);   //type check failed.
-            }
-            break;
-        default:
-            error(27, lineNumber);   //type check failed.
-            break;
-    }
-}
-void assignIt(datatype dt, int index) {
-    switch (dt) {
-        case nul:
-            error(27, lineNumber);   //type check failed.
-            break;
-        case chartype:
-            if (sym == chr) {
-                setData(lsIdent, index, lsChar);
-            }
-            else {
-                error(27, lineNumber);   //type check failed.
-            }
-            break;
-        case inttype:
-            if (sym == num) {
-                setData(lsIdent, index, lsNum);
-            }
-            else if (sym == chr) {
-                setData(lsIdent, (int)lsChar);
-            }
-            else {
-                error(27, lineNumber);   //type check failed.
-            }
-            break;
-        default:
-            error(27, lineNumber);   //type check failed.
-            break;
-    }
-}
+//void assignIt(datatype dt) {
+//    switch (dt) {
+//        case nul:
+//            error(27, lineNumber);   //type check failed.
+//            break;
+//        case chartype:
+//            if (sym == chr) {
+//                setData(lsIdent, lsChar);
+//            }
+//            else {
+//                error(27, lineNumber);   //type check failed.
+//            }
+//            break;
+//        case inttype:
+//            if (sym == num) {
+//                setData(lsIdent, lsNum);
+//            }
+//            else if (sym == chr) {
+//                setData(lsIdent, (int)lsChar);
+//            }
+//            else {
+//                error(27, lineNumber);   //type check failed.
+//            }
+//            break;
+//        default:
+//            error(27, lineNumber);   //type check failed.
+//            break;
+//    }
+//}
+//void assignIt(datatype dt, int index) {
+//    switch (dt) {
+//        case nul:
+//            error(27, lineNumber);   //type check failed.
+//            break;
+//        case chartype:
+//            if (sym == chr) {
+//                setData(lsIdent, index, lsChar);
+//            }
+//            else {
+//                error(27, lineNumber);   //type check failed.
+//            }
+//            break;
+//        case inttype:
+//            if (sym == num) {
+//                setData(lsIdent, index, lsNum);
+//            }
+//            else if (sym == chr) {
+//                setData(lsIdent, (int)lsChar);
+//            }
+//            else {
+//                error(27, lineNumber);   //type check failed.
+//            }
+//            break;
+//        default:
+//            error(27, lineNumber);   //type check failed.
+//            break;
+//    }
+//}
 
 void callProcStatement() {
     //cout << "This is a Procedure Call Statement." << endl;
     int offset_t;
     char procname[MaxRes + 1];
     identtype it;
+    offset_t = offset;
     if (sym == ident) {
         strcpy_s(procname, lsIdent);
         it = getIdentType(lsIdent);
@@ -644,32 +651,32 @@ void callProcStatement() {
                 //if (sym != rparen) {
                 if (actualParamList(procname)) {
                     if (sym == rparen) {
-                        offset_t = offset;
+                        offset = offset_t;
                         g_saveCallReg(procname);
                         g_jal(procname);
                         g_unsaveCallReg();
-                        offset = offset_t;
                         getSym();
                     }
                     else {
-                        error(20, lineNumber);   //error : a right parenthsis is needed.
+                        error(20, lineNumber, errcall);   //error : a right parenthsis is needed.
                     }
                 }
                 else {
-                    error(43, lineNumber);  //error : parameter list dispatches.
+                    error(43, lineNumber, errcall);  //error : parameter list dispatches.
                 }
             }
             else {
-                error(21, lineNumber);   //error : a left parenthsis is needed.
+                error(21, lineNumber, errcall);   //error : a left parenthsis is needed.
             }
         }
         else {
-            error(0, lineNumber);   //error : the identifier should be a procedure.
+            error(0, lineNumber, errcall);   //error : the identifier should be a procedure.
         }
     }
     else {
         error(10, lineNumber);   //error : an identifier is needed.
     }
+    offset = offset_t;
     //cout << setw(--numOfBlank * 4) << "" << "The Procedure Call Statement finished." << endl;
 }
 void callFuncStatement() {
@@ -677,6 +684,7 @@ void callFuncStatement() {
     char funcname[MaxRes + 1];
     int offset_t;
     identtype it;
+    offset_t = offset;
     if (sym == ident) {
         strcpy_s(funcname, lsIdent);
         it = getIdentType(lsIdent);
@@ -687,34 +695,34 @@ void callFuncStatement() {
                 //if (sym != rparen) {
                 if (actualParamList(funcname)) {
                     if (sym == rparen) {
-                        offset_t = offset;
+                        offset = offset_t;
                         g_saveCallReg(funcname);
                         g_jal(funcname);
                         g_add("$v0", 0, "$t7");
                         g_unsaveCallReg();
-                        offset = offset_t;
                         getSym();
                     }
                     else {
-                        error(20, lineNumber);   //error : a right parenthsis is needed.
+                        error(20, lineNumber, errcall);   //error : a right parenthsis is needed.
                     }
                 }
                 else {
-                    error(43, lineNumber);  //error : parameter list dispatches.
+                    error(43, lineNumber, errcall);  //error : parameter list dispatches.
                 }
             }
             else {
-                error(21, lineNumber);   //error : a left parenthsis is needed.
+                error(21, lineNumber, errcall);   //error : a left parenthsis is needed.
             }
         }
         else {
-            error(28, lineNumber);   //error : the identifier should be a procedure.
+            error(28, lineNumber, errcall);   //error : the identifier should be a procedure.
         }
     }
     else {
-        error(10, lineNumber);   //error : an identifier is needed.
+        error(10, lineNumber, errcall);   //error : an identifier is needed.
     }
-        //cout << setw(--numOfBlank * 4) << "" << "The Function Call Statement finished." << endl;
+    offset = offset_t;
+    //cout << setw(--numOfBlank * 4) << "" << "The Function Call Statement finished." << endl;
 }
 bool actualParamList(char name[]) {
     //cout << setw(numOfBlank++ * 4) << "" << "Actual Param List started." << endl;
@@ -723,6 +731,7 @@ bool actualParamList(char name[]) {
     if (paramNum == 0)
         return true;
     int funcLevel = tp->lv;
+    offset += 56 + (tp->lv + 1) * 4;
     expData* expdata;
     //todo : 
     paramNum--;
@@ -736,7 +745,7 @@ bool actualParamList(char name[]) {
     while (sym == comma) {
         paramNum--;
         if (paramNum < 0) {
-            error(43, lineNumber);  //error : parameter list dispatches.
+            error(43, lineNumber, errcall);  //error : parameter list dispatches.
             break;
         }
         getSym();
@@ -749,7 +758,8 @@ bool actualParamList(char name[]) {
         g_saveParam(funcLevel, tp->identt, *expdata);
     }
     if (paramNum > 0) {
-        error(43, lineNumber);  //error : parameter list dispatches.
+        error(43, lineNumber, errcall);  //error : parameter list dispatches.
+        return false;
     }
     //cout << setw(--numOfBlank * 4) << "" << "Actual Param List finished." << endl;
     g_resetParamCounter();
@@ -786,7 +796,7 @@ void ifStatement() {
             g_cmp("lss", elseLabel);
             break;
         default:
-            error(30, lineNumber);   //error : invalid relational operator.
+            error(30, lineNumber, errifhead);   //error : invalid relational operator.
             break;
     }
     if (sym == thensym) {
@@ -800,7 +810,7 @@ void ifStatement() {
         }
     }
     else {
-        error(29, lineNumber);   // error : "then" is needed.
+        error(29, lineNumber, errifhead);   // error : "then" is needed.
     }
     //cout << setw(--numOfBlank * 4) << "" << "The Condition Statement finished." << endl;
     g_label(endifLabel);
@@ -850,14 +860,14 @@ void whileStatement() {
             g_cmp("lss", endWhileLabel);
             break;
         default:
-            error(30, lineNumber);   //error : invalid relational operator.
+            error(30, lineNumber, errwhile);   //error : invalid relational operator.
             break;
     }
     if (sym == dosym) {
         getSym();
     }
     else {
-        error(31, lineNumber);   // error : "do" is needed.
+        error(31, lineNumber, errwhile);   // error : "do" is needed.
     }
     g_saveConditionReg();
     statement();
@@ -930,32 +940,33 @@ void forStatement() {
                                 g_j(forLabel);
                                 g_label(endforLabel);
                             }
+                            //for i := a to b by 1 do
                             else {
-                                error(31, lineNumber);   // error : "do" is needed.
+                                error(31, lineNumber, errforheaddo);   // error : "do" is needed.
                             }
                         }
                         else {
-                            error(36, lineNumber);  //error : step can't be zero.
+                            error(36, lineNumber, errforhead);  //error : step can't be zero.
                         }
                     }
                     else {
-                        error(11, lineNumber);   //error : a number or a char is needed in For Statement.
+                        error(11, lineNumber, errforhead);   //error : a number or a char is needed in For Statement.
                     }
                 }
                 else {
-                    error(32, lineNumber);   //error : "by" is needed.
+                    error(32, lineNumber, errforhead);   //error : "by" is needed.
                 }
             }
             else {
-                error(33, lineNumber);   //error : "to" is needed.
+                error(33, lineNumber, errforhead);   //error : "to" is needed.
             }
         }
         else {
-            error(9, lineNumber);   //error : an assign symbol is needed in For Statement.
+            error(9, lineNumber, errforhead);   //error : an assign symbol is needed in For Statement.
         }
     }
     else {
-        error(10, lineNumber);   //error : an identifier is needed.
+        error(10, lineNumber, errforhead);   //error : an identifier is needed.
     }
     //cout << setw(--numOfBlank * 4) << "" << "The For Statement finished." << endl;
 }
@@ -963,25 +974,27 @@ void forStatement() {
 void complexStatement() {
     //cout << setw(numOfBlank++ * 4) << "" << "This is a Complex Statement." << endl;
     complexLevel++;
-    if (sym == beginsym) {
+    if (sym != beginsym) {
+        error(35, lineNumber);   //error : unknown start of code block, "begin" is needed.
+    }
+    getSym();
+    statement();
+    while (sym == semicolon) {
         getSym();
         statement();
-        while (sym == semicolon) {
-            getSym();
-            statement();
-        }
-        if (sym == endsym) {
-            complexLevel--;
-            getSym();
-        }
-        else {
-            error(34, lineNumber);   //error : "end" is needed.
-        }
+    }
+    if (sym == endsym) {
+        complexLevel--;
+        getSym();
     }
     else {
-        error(35, lineNumber);   //error : "begin" is needed.
-        complexLevel--;
+        error(34, lineNumber);   //error : a semicolon or an "end" is needed.
     }
+
+    //else {
+    //    error(35, lineNumber);   //error : unknown start of code block, "begin" is needed.
+    //    complexLevel--;
+    //}
     //cout << setw(--numOfBlank * 4) << "" << "The Complex Statement finished." << endl;
 }
 
@@ -1003,22 +1016,22 @@ void readStatement() {
                     getSym();
                 }
                 else {
-                    error(10, lineNumber);   //error : an identifier is needed.
+                    error(10, lineNumber, errread);   //error : an identifier is needed.
                 }
             }
             if (sym == rparen) {
                 getSym();
             }
             else {
-                error(20, lineNumber);   //error : a right parenthsis is needed.
+                error(20, lineNumber, errread);   //error : a right parenthsis is needed.
             }
         }
         else {
-        error(10, lineNumber);   //error : an identifier is needed.
+            error(10, lineNumber, errread);   //error : an identifier is needed.
         }
     }
     else {
-        error(21, lineNumber);   //error : a left parenthsis is needed.
+        error(21, lineNumber, errread);   //error : a left parenthsis is needed.
     }
     //cout << setw(--numOfBlank * 4) << "" << "The Read Statement finished." << endl;
 }
@@ -1044,7 +1057,9 @@ void writeStatement() {
                     }
                 }
                 else {
-                    error(44, lineNumber);  // error : invalid expression
+                    //error(44, lineNumber);  // error : invalid expression
+                    while (sym != rparen && sym!=semicolon)
+                        getSym();
                 }
             }
             if(sym == rparen) {
@@ -1065,7 +1080,9 @@ void writeStatement() {
                 }
             }
             else {
-                error(44, lineNumber);  //error : a right parenthsis is needed.
+                //error(44, lineNumber);  // error : invalid expression
+                while (sym != rparen && sym != semicolon)
+                    getSym();
             }
             if (sym == rparen) {
                 getSym();
@@ -1076,7 +1093,7 @@ void writeStatement() {
         }
     }
     else {
-        error(21, lineNumber);   //error : a left parenthsis is needed.
+        error(21, lineNumber,errwrite);   //error : a left parenthsis is needed.
     }
     //cout << setw(--numOfBlank * 4) << "" << "The Write Statement finished." << endl;
 }
@@ -1143,7 +1160,7 @@ expData* term() {
                 break;
         }
         getSym();
-        factor();
+        data = factor();
         if (times) {
             g_gen("mul", "$t8", "$t7", "$t8");
         }
@@ -1186,6 +1203,10 @@ expData* factor() {
     else if (sym == ident) {
         sprintf_s(name, MaxRes, "%s", lsIdent);
         const identifier *tp = getReadTableItem(name);
+        if (tp == null) {
+            error(49, lineNumber);  //error : identifier undefined.
+            return null;
+        }
         strcpy_s(data->name, name);
         if (tp->identt == functype) {
             data->type = expFunc;
@@ -1235,7 +1256,7 @@ expData* factor() {
     }
     else {
         data = NULL;
-        error(44, lineNumber);  // error : invalid expression.
+        error(44, lineNumber, errexp);  // error : invalid expression.
     }
     //cout << setw(--numOfBlank * 4) << "" << "Factor finished." << endl;
     return data;

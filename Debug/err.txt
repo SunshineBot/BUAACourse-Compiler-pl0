@@ -1,0 +1,4 @@
+An error has occured. Error code = 43 at line 24. Reason : parameter list dispatches.
+An error has occured. Error code = 43 at line 25. Reason : parameter list dispatches.
+An error has occured. Error code = 34 at line 26. Reason : a semicolon or an "end" is missing.
+An error has occured. Error code = -1 at line 29. Reason : arrive at END OF FILE unexpectdly.Amount of Error is 4

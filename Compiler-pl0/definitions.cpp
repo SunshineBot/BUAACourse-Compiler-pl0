@@ -6,9 +6,9 @@
 using namespace std;
 
 
-char filename[MaxStr] = "13061181_test.txt";
+char filename[MaxStr] = "";
 
-int lineNumber = 0;
+int lineNumber = 1;
 char ch = ' ';
 symbol sym;
 int errorAmount = 0;
@@ -57,17 +57,18 @@ bool isDigit(char ch) {
 }
 
 bool isLetter(char ch) {
-    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'A');
+    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
 }
 
 bool isLetterOrDigit(char ch) {
     return isLetter(ch) || isDigit(ch);
 }
 
-void transform(char* ch) {
-    if (*ch >= 'A' && *ch <= 'Z') {
-        *ch = *ch + ('a' - 'A');
+char transform(char ch) {
+    if (ch >= 'A' && ch <= 'Z') {
+        ch = ch + ('a' - 'A');
     }
+    return ch;
 }
 
 symbol adder(char c[]) {

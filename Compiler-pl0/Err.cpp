@@ -1,14 +1,18 @@
 //Err.cpp
 #include <iostream>
 #include "definitions.h"
+#include "Err.h"
 
 using namespace std;
 
 extern int getSym();
 
-void skipFor();
 
-extern void error(int code, int lineNumber) {
+
+void error(int code, int lineNumber) {
+    error(code, lineNumber, errunknown);
+}
+extern void error(int code, int lineNumber, errpos pos) {
     //cout << "error code : " << code << endl;
     if (code == -1) {
         if (complexLevel != 0) {
@@ -17,6 +21,7 @@ extern void error(int code, int lineNumber) {
             cout << "arrive at END OF FILE unexpectdly.";
             errorAmount++;
         }
+        cout << endl;
         return;
     }
     errorAmount++;
@@ -46,9 +51,6 @@ extern void error(int code, int lineNumber) {
             break;
         case 8:
             cout << "\"const\" is needed.";
-            while (sym != semicolon)
-                getSym();
-            getSym();
             break;
         case 9:
             cout << "an assign symbol is needed.";
@@ -78,7 +80,7 @@ extern void error(int code, int lineNumber) {
             cout << "a left bracket is needed.";
             break;
         case 18:
-            cout << "type name is needed.";
+            cout << "unknown variable type.";
             break;
         case 19:
             cout << "no this type.";
@@ -126,10 +128,10 @@ extern void error(int code, int lineNumber) {
             cout << "\"to\" is needed.";
             break;
         case 34:
-            cout << "\"end\" is needed.";
+            cout << "a semicolon or an \"end\" is missing.";
             break;
         case 35:
-            cout << "\"begin\" is needed.";
+            cout << "unknown start of code block, \"begin\" is needed.";
             break;
         case 36:
             cout << "step can't be zero.";
@@ -167,20 +169,103 @@ extern void error(int code, int lineNumber) {
         case 47:
             cout << "a comma or a right parenthsis is needed.";
             break;
+        case 48:
+            cout << "const data can't be assigned.";
+            break;
+        case 49:
+            cout << "identifier undefined." << endl;
+            return;
+            break;
         default:
             break;
     }
     cout << endl;
+
+    symbol startVector[] = { beginsym, ident, };
+    symbol expVector[] = { semicolon, rbracket, comma, rparen, leq,
+        lss, eql, neq, geq, gtr, thensym , tosym, bysym};
+    int expflag = false;
+    int line = lineNumber;
+    switch (pos) {
+        case errunknown:
+            while (sym != semicolon)
+                getSym();
+            //getSym();
+            break;
+            break;
+        case errforhead:
+            while (sym != dosym)
+                getSym();
+            getSym();
+            break;
+        case errifhead:
+            while (sym != thensym)
+                getSym();
+            getSym();
+            break;
+        case errconst:
+        case errassign:
+        case errvar:
+        case errproc:
+        case errfunc:
+            while (sym!=semicolon)
+                getSym();
+            break;
+        case errparam:
+            while (sym != rparen)
+                getSym();
+            getSym();
+            break;
+        case errread:
+            while (sym != semicolon)
+                getSym();
+            getSym();
+            break;
+        case errconstDef:
+            while (sym != comma)
+                getSym();
+            getSym();
+            break;
+        case errcall:
+            while (sym != semicolon)
+                getSym();
+            getSym();
+            break;
+        case errwhile:
+            while (sym != dosym)
+                getSym();
+            getSym();
+            break;
+        case errwrite:
+            while (sym != semicolon)
+                getSym();
+            getSym();
+            break;
+        case errexp:
+            while (!expflag) {
+                for (int i = 0; i < 13; i++) {
+                    if (sym == expVector[i]) {
+                        expflag = true;
+                        break;
+                    }
+                }
+                if (!expflag)
+                    getSym();
+            }
+            break;
+        default:
+            break;
+    }
 }
 
-void skipFor() {
-    int beginFlag = 0;
-    while (beginFlag > 0 || sym != semicolon) {
-        if (sym == beginsym)
-            beginFlag++;
-        if (sym == endsym)
-            beginFlag--;
-        getSym();
-    }
-    getSym();
-}
+//void skipFor() {
+//    int beginFlag = 0;
+//    while (beginFlag > 0 || sym != semicolon) {
+//        if (sym == beginsym)
+//            beginFlag++;
+//        if (sym == endsym)
+//            beginFlag--;
+//        getSym();
+//    }
+//    getSym();
+//}

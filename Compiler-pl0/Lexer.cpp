@@ -64,21 +64,26 @@ extern int getSym() {
     while (ch == ' ' || ch == '\t') {
         ch = getch();
     }
-    transform(&ch);
+    //transform(&ch);
     if (isLetter(ch)) { //字母开头，标识符，保留字
-        char wd[MaxRes];
+        char wd[MaxRes],smallwd[MaxRes];
         int x = 0;
-        wd[x++] = ch;
+        wd[x] = ch;
+        smallwd[x] = transform(ch);
+        x++;
         while (x < MaxRes && isLetterOrDigit(ch = getch())) {
-            wd[x++] = ch;
+            wd[x] = ch;
+            smallwd[x] = transform(ch);
+            x++;
         }
         wd[x] = '\0';
+        smallwd[x] = '\0';
         if (x >= MaxRes) {
             error(1, lineNumber);   //标识符超出长度限制（MaxRes个）
             while (!isLetterOrDigit(ch = getch()));
         }
         int rx;
-        for (rx = 4; rx<NumRes && strcmp(wd, symbolConst[rx]); rx++);      //查找保留字表
+        for (rx = 4; rx<NumRes && strcmp(smallwd, symbolConst[rx]); rx++);      //查找保留字表
         if (rx > NumRes - 1) {            //超出，为标识符
             symbolTable[ident]++;
             sym = ident;
@@ -224,8 +229,12 @@ extern int getSym() {
                 ch = getch();
                 break;
             case '\0':
+            {
                 ch = getch();
-                return getSym();
+                int rt = getSym();
+                lineNumber++;
+                return rt;
+            }
                 break;
             case -1:
                 return -1;
@@ -236,7 +245,7 @@ extern int getSym() {
                 break;
         }
     }
-    return r;
+        return r;
 }
 
 char getch() {
@@ -244,17 +253,19 @@ char getch() {
     static int index = -1;
     ++index;
     if (line[index] == '\0') {
-        lineNumber++; 
+        //lineNumber++; 
         if (fpin.eof()) {
             error(-1, lineNumber);      //意外遇到文件尾。
             return -1;
         }
         fpin.getline(line, MaxStr);
-        while (!fpin.eof() && line[0] == '\0')
+        while (!fpin.eof() && line[0] == '\0') {
+            lineNumber++;
             fpin.getline(line, MaxStr);
+        }
         index = -1;
         return '\0';
     }
-    transform(&line[index]);
+    //transform(&line[index]);
     return line[index];
 }

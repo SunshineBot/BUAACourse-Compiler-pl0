@@ -5,8 +5,6 @@ using namespace std;
 #define _definitions_h_
 
 
-extern void error(int, int);
-
 #define MaxRes 32
 #define MaxNum 9
 #define MaxStr 256
@@ -14,6 +12,13 @@ extern void error(int, int);
 #define NumRes 44
 
 #define null NULL
+
+enum errpos {
+    errunknown, errforhead, errifhead, errconst, errassign, errvar, errproc,
+    errfunc, errparam, errread, errconstDef, errcall, errwhile, errwrite, errexp,
+    errforheaddo
+};
+
 enum symbol {
     nil,                    //1
     ident, num, str, chr,    //4
@@ -131,7 +136,7 @@ bool isDigit(char);
 bool isLetter(char ch);
 bool isLetterOrDigit(char ch);
 
-void transform(char* ch);
+char transform(char ch);
 
 symbol adder(char c[]);
 symbol adder(char ch);

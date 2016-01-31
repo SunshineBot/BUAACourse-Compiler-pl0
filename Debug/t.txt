@@ -1,0 +1,12 @@
+var a,b:integer;
+
+function sum(var a:integer;b:integer):integer;
+begin
+	sum:=a+b;
+end;
+
+begin
+	a:=1;
+	b:=2;
+	write(sum(a,sum(a,b)));
+end.

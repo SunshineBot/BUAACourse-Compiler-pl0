@@ -1,0 +1,90 @@
+const maxlen = 9,
+	  max = 'c',
+	  min = 3.14;
+
+var arr: array[10] of integer;
+	x,res:integer;
+	ch:char;
+	realnum:real;
+procedure sort(head,tail:integer);
+	var i,j:integer;
+		temp:integer;
+	begin	
+		if head<tail then
+		begin
+			i:=head;
+			j:=tail+1;
+			temp:=arr[head];
+			while i < j do
+				begin
+					j:=j-1;
+					while temp < arr[j] do
+						 j:=j-1;
+					arr[i]:=arr[j];
+					arr[j]:=temp;
+
+					if i=j then
+						i:=i-1;
+					i:=i+1;
+					while temp > arr[i] do 
+						i:=i+1;
+					arr[j]:=arr[i];
+					arr[i]:=temp
+				end;
+			sort(head,j-1);
+			sort(i+1,tail)
+		end
+	end;
+		
+function gcd(gcdx,y:integer):integer;
+	var temp:integer;
+	begin
+		if gcdx<0 then
+			gcdx:=-gcdx;
+		if y<0 then
+			y:=-y;
+		if y<>0 then
+				begin
+					temp:=gcdx-gcdx/y*y;
+					gcdx:=y;
+					y:=temp
+				end;
+		while y <> 0 do
+			if y<>0 then
+				begin
+					temp:=gcdx-gcdx/y*y;
+					gcdx:=y;
+					y:=temp
+				end;
+		gcd:=gcdx
+	end;
+
+begin
+write(max);
+	write("Please input ten integers: ");
+	for x:= 0 to maxlen do
+	begin
+		 read(res);
+		 arr[x] := res
+	end;
+	read(ch);
+	realnum := 2.2;
+	if 2 > 1 then
+	begin
+		sort(0,9);
+		write("QwQ",arr[0]);
+write("QwQ",arr[1]);
+write("QwQ",arr[2]);
+write("QwQ",arr[3]);
+write("QwQ",arr[4]);
+write("QwQ",arr[5]);
+write("QwQ",arr[6]);
+write("QwQ",arr[7]);
+write("QwQ",arr[8]);
+write("QwQ",arr[9]);
+		res:=gcd(arr[9],arr[8]);
+		write("The Greatest common divisor is ",res)
+	end
+	else 
+		write("The char is bigger than the real number!",realnum)
+end.
